@@ -1,0 +1,23 @@
+# Core dependencies for Chess Analyzer
+requests>=2.31.0
+python-chess>=1.999
+chess.com>=1.0.0
+
+# CLI interface
+click>=8.1.0
+
+# Database
+# sqlite3 is built-in to Python, no need to install
+
+# AI/ML dependencies (for later)
+# sentence-transformers>=2.2.0
+# chromadb>=0.4.0
+# faiss-cpu>=1.7.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-mock>=3.12.0
+pytest-click>=1.1.0
+
+# Packaging
+pyinstaller>=6.0.0
