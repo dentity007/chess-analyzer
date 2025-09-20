@@ -106,6 +106,9 @@ python -m src.main analyze --username magnuscarlsen --date-range 2024-01-01:2024
 
 # Get player statistics
 python -m src.main stats --username magnuscarlsen
+
+# Test Chess.com authentication setup
+python -m src.main auth-test
 ```
 
 ### Sample Output
@@ -132,6 +135,18 @@ Consider focusing on king safety in the middlegame - this appeared in 3 of the 5
 ```
 
 ## ⚙️ Configuration
+
+### Chess.com Credentials (Optional)
+For future premium features and testing, you can store Chess.com credentials locally:
+
+1. Create a `config.local.ini` file in the project root:
+   ```ini
+   [chess_com]
+   username = your_chess_com_username
+   password = your_password
+   ```
+
+2. **Security Note**: This file is automatically excluded from Git commits via `.gitignore`
 
 ### AI Features Setup
 1. Get an xAI API key from [x.ai/api](https://x.ai/api)

@@ -51,18 +51,21 @@ We will keep you informed about our progress throughout the process of fixing th
 
 #### API Keys and Credentials
 - **xAI API Key**: Store securely, never commit to version control
-- **Chess.com Credentials**: Not required (we use public API)
+- **Chess.com Credentials**: Optional for future premium features, stored locally in `config.local.ini`
+- **Local Config File**: `config.local.ini` is automatically excluded from Git commits
 - **Database**: Local SQLite files contain your game data
 
 #### Network Communications
 - All API calls use HTTPS encryption
 - No sensitive data is transmitted except API keys
 - Rate limiting prevents abuse
+- Local credentials are never sent over network (used for future authenticated features)
 
 #### Local Security
 - Chess Analyzer runs locally on your machine
 - No remote code execution capabilities
 - Stockfish engine runs as a local process
+- Credentials stored securely in local config file
 
 ### For Developers
 

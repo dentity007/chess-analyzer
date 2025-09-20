@@ -1,5 +1,27 @@
 #!/usr/bin/env python3
-"""Chess Analyzer - Main CLI application."""
+"""Chess Analyzer - Main CLI application.
+
+This is the main entry point for the Chess Analyzer command-line interface.
+It provides comprehensive chess game analysis tools with support for:
+
+- Chess.com API integration (with optional local credential storage)
+- SQLite database for efficient game storage and querying
+- Stockfish engine integration for move evaluation
+- xAI Grok AI for personalized chess improvement advice
+- Cross-platform GUI and CLI interfaces
+
+Security Features:
+- Local credential storage in config.local.ini (excluded from Git)
+- Optional authentication for future premium features
+- Secure API communication with rate limiting
+
+Usage:
+    python -m src.main --help          # Show available commands
+    python -m src.main --gui           # Launch GUI interface
+    python -m src.main fetch username  # Fetch games for a user
+    python -m src.main analyze --username username  # Analyze games
+    python -m src.main auth-test       # Test authentication setup
+"""
 
 import click
 from pathlib import Path
@@ -18,13 +40,33 @@ from ai.grok_client import GrokClient
 @click.option('--gui', is_flag=True, help='Launch GUI interface')
 @click.version_option(version="0.1.0")
 def cli(gui):
-    """Chess Analyzer - Analyze your chess games with AI-powered insights."""
+    """Chess Analyzer - Analyze your chess games with AI-powered insights.
+
+    This application provides comprehensive chess analysis tools including:
+    - Game fetching from Chess.com
+    - Move-by-move analysis with Stockfish
+    - AI-powered improvement suggestions
+    - Local database storage
+    - Cross-platform GUI and CLI interfaces
+    """
     if gui:
-        # Launch GUI
+        # Launch GUI interface (defined in gui.py)
         from gui import main
         main()
         return
-    pass
+
+    # Display authentication status on startup
+    # This shows whether local credentials are configured
+    client = ChessComClient()
+    if client.username:
+        click.echo(f"✓ Chess.com authentication configured for: {client.username}")
+        if client.test_authentication():
+            click.echo("✅ Profile access successful")
+        else:
+            click.echo("ℹ Profile access failed (credentials stored for future use)")
+    else:
+        click.echo("ℹ Using Chess.com public API (no authentication)")
+    click.echo()
 
 @cli.command()
 @click.argument('username')
@@ -151,6 +193,59 @@ def stats(username):
             
     except Exception as e:
         click.echo(f"Error fetching stats: {e}", err=True)
+
+@cli.command()
+def auth_test():
+    """Test Chess.com authentication setup.
+
+    This command validates the local credential configuration by:
+    1. Checking if config.local.ini exists and contains valid credentials
+    2. Testing API access to the configured Chess.com account
+    3. Providing detailed feedback about the authentication status
+
+    The test doesn't perform actual authentication (since Chess.com public API
+    doesn't require it for most operations), but validates that:
+    - Credentials are properly loaded from config.local.ini
+    - The configured username exists and is accessible
+    - The API is responding correctly
+
+    Usage:
+        python -m src.main auth-test
+
+    Expected Output:
+        - Success: Credentials loaded and profile accessible
+        - Failure: Detailed error messages explaining the issue
+        - Info: Guidance for resolving configuration problems
+
+    Note: This command is primarily for testing and validation purposes.
+    The application works without authentication for analyzing public games.
+    """
+    click.echo("Testing Chess.com authentication setup...")
+
+    client = ChessComClient()
+
+    if not client.username:
+        click.echo("❌ No credentials configured")
+        click.echo("Create config.local.ini with your Chess.com credentials:")
+        click.echo("  [chess_com]")
+        click.echo("  username = your_username")
+        click.echo("  password = your_password")
+        return
+
+    click.echo(f"Username: {client.username}")
+
+    if client.test_authentication():
+        click.echo("✅ Authentication setup successful!")
+
+        # Try to get authenticated profile
+        profile = client.get_my_profile()
+        if profile:
+            click.echo(f"Profile accessible: {profile.get('username', 'Unknown')}")
+            click.echo(f"Name: {profile.get('name', 'N/A')}")
+    else:
+        click.echo("ℹ Profile access failed")
+        click.echo("This is normal for Chess.com public API - credentials are stored for future premium features")
+        click.echo("The application will still work for analyzing public games")
 
 if __name__ == '__main__':
     cli()

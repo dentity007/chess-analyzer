@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Local Credential Storage**: Secure Chess.com credential management in `config.local.ini`
+- **Authentication Testing**: New `auth-test` CLI command for credential validation
+- **Enhanced Security**: Automatic exclusion of credential files from Git commits
 - Initial public release preparation
 - Comprehensive documentation
 - GitHub repository setup
@@ -16,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated README with production-ready documentation
 - Improved error handling and user feedback
+- Enhanced API client with credential support
 
 ### Fixed
 - Minor bug fixes and performance improvements

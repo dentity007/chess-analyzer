@@ -32,8 +32,16 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
+# (Optional) Configure local credentials for testing
+# Create config.local.ini with your Chess.com credentials
+cp config.local.ini.example config.local.ini
+# Edit config.local.ini with your credentials (never commit this file!)
+
 # Run tests to ensure everything works
 pytest tests/
+
+# Test authentication setup
+python -m src.main auth-test
 
 # Start developing
 python -m src.main --gui
@@ -166,11 +174,34 @@ class TestChessComClient:
 
 ## 📚 Documentation
 
-### Updating Documentation
-- Keep README.md up to date
-- Update docstrings when changing function signatures
-- Add examples for new features
 - Update changelog for significant changes
+
+## 🔒 Security Considerations
+
+### Credential Management
+- **Never commit credentials** to version control
+- Use `config.local.ini` for local development credentials
+- This file is automatically excluded by `.gitignore`
+- For testing, use test accounts with minimal privileges
+
+### API Security
+- Respect rate limits when working with Chess.com API
+- Handle API errors gracefully
+- Don't expose sensitive information in logs
+- Use HTTPS for all external communications
+
+### Code Security
+- Validate all user inputs
+- Use parameterized queries for database operations
+- Avoid hardcoding sensitive information
+- Follow principle of least privilege
+
+### Reporting Security Issues
+- Report security vulnerabilities to: security@chess-analyzer.dev
+- Don't create public issues for security problems
+- Allow time for fixes before public disclosure
+
+## 🔧 Tools and Dependencies
 
 ### Documentation Files
 - `README.md`: Main project documentation

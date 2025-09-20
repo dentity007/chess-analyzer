@@ -132,8 +132,11 @@ engines/
 stockfish*
 
 # API keys and secrets
+# IMPORTANT: These files contain sensitive credentials and should NEVER be committed to Git
 secrets.json
 config.json
+config.local.ini  # Chess.com credentials for local development/testing
+config.local.ini.example  # Template file (should not be modified and committed)
 *.key
 
 # Logs
