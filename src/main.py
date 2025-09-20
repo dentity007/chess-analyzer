@@ -95,17 +95,39 @@ def fetch(username):
 @click.option('--game-id', help='Analyze specific game ID')
 @click.option('--date-range', help='Date range in format YYYY-MM-DD:YYYY-MM-DD')
 def analyze(username, all, game_id, date_range):
-    """Analyze chess games and provide insights."""
+    """Analyze chess games and provide insights.
+
+    This command performs comprehensive chess analysis including:
+    - Move-by-move evaluation using Stockfish engine
+    - Blunder and mistake detection
+    - Accuracy calculation
+    - AI-powered improvement suggestions via xAI Grok
+
+    The analysis process:
+    1. Retrieves games from local database based on specified criteria
+    2. Analyzes each game using the ChessAnalyzer (Stockfish integration)
+    3. Generates AI advice for improvement areas
+    4. Displays results with detailed statistics
+
+    Args:
+        username: Chess.com username to analyze games for
+        all: Flag to analyze all games (default: last 10)
+        game_id: Specific game ID to analyze
+        date_range: Date range filter in YYYY-MM-DD:YYYY-MM-DD format
+    """
     click.echo(f"Analyzing games for {username}")
-    
-    db = ChessDatabase()
-    analyzer = ChessAnalyzer()
-    ai_client = GrokClient()
-    
+
+    # Initialize core components
+    db = ChessDatabase()           # Database access for game retrieval
+    analyzer = ChessAnalyzer()     # Chess engine integration for analysis
+    ai_client = GrokClient()       # AI client for improvement advice
+
     try:
         games = []
-        
+
+        # Determine which games to analyze based on user input
         if game_id:
+            # Single game analysis
             game = db.get_game_by_id(game_id)
             if game:
                 games = [game]
@@ -113,59 +135,67 @@ def analyze(username, all, game_id, date_range):
                 click.echo(f"Game {game_id} not found in database")
                 return
         elif date_range:
-            # Parse date range
+            # Date range analysis
             start_str, end_str = date_range.split(':')
             start_date = datetime.strptime(start_str, '%Y-%m-%d')
             end_date = datetime.strptime(end_str, '%Y-%m-%d')
             games = db.get_games_by_date_range(username, start_date, end_date)
         else:
-            games = db.get_games_by_username(username, limit=10)  # Limit for demo
-        
+            # Default: analyze recent games (limit for performance)
+            games = db.get_games_by_username(username, limit=10)
+
         if not games:
             click.echo("No games found to analyze")
             return
-        
+
+        # Initialize counters for overall statistics
         total_blunders = 0
         total_mistakes = 0
-        
+
+        # Analyze each game individually
         for game in games:
             click.echo(f"\nAnalyzing game: {game['game_id']}")
             analysis = analyzer.analyze_game(game['pgn'])
-            
+
+            # Handle analysis errors gracefully
             if 'error' in analysis:
                 click.echo(f"Error analyzing game: {analysis['error']}")
                 continue
-            
+
+            # Extract and display game summary
             summary = analysis['summary']
             click.echo(f"Moves: {summary['total_moves']}")
             click.echo(f"Blunders: {summary['blunder_count']}")
             click.echo(f"Mistakes: {summary['mistake_count']}")
             click.echo(f"Accuracy: {summary['accuracy']:.1f}%")
-            
+
+            # Accumulate totals for final summary
             total_blunders += summary['blunder_count']
             total_mistakes += summary['mistake_count']
-            
-            # Show top blunders
-            blunders = analysis['blunders'][:3]  # Top 3
+
+            # Display top blunders for this game
+            blunders = analysis['blunders'][:3]  # Show top 3 blunders
             if blunders:
                 click.echo("Top blunders:")
                 for blunder in blunders:
                     click.echo(f"  Move {blunder['move_number']}: {blunder['move']} "
                              f"(lost {blunder['score_change']} cp)")
-            
-            # Get AI advice
-            click.echo("\nAI Analysis:")
+
+            # Generate and display AI-powered advice
+            click.echo("\n🤖 AI Analysis:")
             advice = ai_client.get_chess_advice(game['pgn'], analysis)
             click.echo(advice)
-        
-        click.echo(f"\nOverall: {total_blunders} blunders, {total_mistakes} mistakes across {len(games)} games")
-        
+
+        # Display overall statistics across all analyzed games
+        click.echo(f"\n📊 Overall: {total_blunders} blunders, {total_mistakes} mistakes across {len(games)} games")
+
     except Exception as e:
         click.echo(f"Error during analysis: {e}", err=True)
     finally:
+        # Ensure all resources are properly closed
         db.close()
         analyzer.close()
-        # ai_client doesn't need closing
+        # ai_client doesn't need explicit closing
 
 @cli.command()
 @click.option('--username', required=True, help='Chess.com username')

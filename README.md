@@ -1,9 +1,12 @@
 # ♟️ Chess Analyzer
 
-[![CI/CD Pipeline](https://github.com/yourusername/chess-analyzer/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/yourusername/chess-analyzer/actions/workflows/ci-cd.yml)
+[![CI/CD Pipeline](https://github.com/dentity007/chess-analyzer/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/dentity007/chess-analyzer/actions/workflows/ci-cd.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Code Coverage](https://codecov.io/gh/yourusername/chess-analyzer/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/chess-analyzer)
+[![macOS Build](https://img.shields.io/badge/macOS-Ready-green.svg)](https://github.com/dentity007/chess-analyzer/releases)
+[![Code Coverage](https://codecov.io/gh/dentity007/chess-analyzer/branch/main/graph/badge.svg)](https://codecov.io/gh/dentity007/chess-analyzer)
+
+A cross-platform desktop application for analyzing chess games from Chess.com with AI-powered insights and comprehensive game analysis.
 
 A cross-platform desktop application for analyzing chess games from Chess.com with AI-powered insights and comprehensive game analysis.
 
@@ -42,7 +45,15 @@ A cross-platform desktop application for analyzing chess games from Chess.com wi
 
 ## 🚀 Quick Start
 
-### Option 1: Standalone Executable (Recommended)
+### Option 1: macOS Application Bundle (Recommended)
+```bash
+# Download ChessAnalyzer.app from GitHub Releases
+# Double-click to launch the GUI application
+# Or use command line from within the app bundle
+ChessAnalyzer.app/Contents/MacOS/ChessAnalyzer --help
+```
+
+### Option 2: Standalone Executable
 ```bash
 # Download the latest release from GitHub
 # Launch the GUI
@@ -181,9 +192,15 @@ chess-analyzer/
 │   └── main.py           # CLI entry point
 ├── tests/                 # Comprehensive test suite
 ├── dist/                  # Built executables (generated)
+│   └── ChessAnalyzer.app  # macOS application bundle
+├── build/                 # Build artifacts (generated)
 ├── requirements.txt       # Python dependencies
-├── build.py              # Packaging script
-├── ChessAnalyzer.spec    # PyInstaller configuration
+├── build.py              # Cross-platform packaging script
+├── build_macos.sh        # macOS-specific build script
+├── build_simple.sh       # Simple build script
+├── ChessAnalyzer.spec    # PyInstaller configuration (cross-platform)
+├── ChessAnalyzer_macos.spec  # macOS-specific PyInstaller config
+├── config.local.ini.example  # Example configuration file
 ├── CHANGELOG.md          # Version history
 ├── CONTRIBUTING.md       # Development guidelines
 ├── ROADMAP.md           # Future development plans
@@ -228,7 +245,18 @@ pytest tests/ -n auto
 - pip package manager
 - Git (for cloning)
 
-### Build Process
+### macOS Build (Recommended)
+```bash
+# Make build script executable
+chmod +x build_macos.sh
+
+# Run the macOS build script
+./build_macos.sh
+
+# Output: dist/ChessAnalyzer.app (35MB macOS application bundle)
+```
+
+### Cross-Platform Build
 ```bash
 # Install build dependencies
 pip install pyinstaller
@@ -240,9 +268,15 @@ python build.py
 pyinstaller ChessAnalyzer.spec
 ```
 
+### Simple Build
+```bash
+# For quick testing builds
+./build_simple.sh
+```
+
 ### Output
+- `dist/ChessAnalyzer.app` - macOS application bundle (35MB)
 - `dist/ChessAnalyzer` - Main executable (cross-platform)
-- `dist/ChessAnalyzer.app` - macOS application bundle
 - `dist/ChessAnalyzer.exe` - Windows executable
 
 ## 🐛 Troubleshooting

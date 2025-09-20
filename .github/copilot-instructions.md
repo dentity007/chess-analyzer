@@ -4,11 +4,30 @@
 
 This is a cross-platform Python desktop application for analyzing chess games from Chess.com. The app follows a modular 5-layer architecture:
 
-- **Data Fetching Layer**: Chess.com public API integration (no authentication required)
-- **Storage Layer**: SQLite database for caching games locally
+- **Data Fetching Layer**: Chess.com public API integration with local credential storage
+- **Storage Layer**: SQLite database for caching games locally with efficient querying
 - **Analysis Layer**: python-chess + Stockfish engine for move evaluation and blunder detection
-- **AI Guidance Layer**: xAI Grok LLM with RAG (Retrieval-Augmented Generation) using vector database
-- **UI Layer**: CLI first (click/argparse), then GUI (Tkinter/PyQt)
+- **AI Guidance Layer**: xAI Grok LLM integration for personalized chess improvement advice
+- **UI Layer**: CLI first (click framework), GUI support (Tkinter), standalone executables (PyInstaller)
+
+## Current Implementation Status (v0.1.0)
+
+### ✅ Completed Features
+- **macOS Application Bundle**: ChessAnalyzer.app (35MB) - fully functional standalone executable
+- **Cross-Platform CLI**: Complete command-line interface with all core features
+- **Chess.com API Integration**: Public API access with rate limiting and error handling
+- **Local Database**: SQLite storage with efficient game caching and querying
+- **Stockfish Integration**: Chess engine for move evaluation and blunder detection
+- **xAI Grok Integration**: AI-powered chess improvement suggestions
+- **Build System**: Automated macOS executable creation with build_macos.sh
+- **Security**: Local credential storage in config.local.ini (gitignored)
+
+### 🚧 Development Branch (feature/mac-executable)
+- Windows executable build preparation
+- Linux executable build preparation
+- Enhanced GUI features
+- Performance optimizations
+- Extended testing coverage
 
 ## Key Components & Patterns
 
@@ -40,9 +59,10 @@ CREATE TABLE games (
 
 ### AI Integration
 - **LLM**: xAI Grok API for natural language chess advice
-- **RAG Setup**: Use `chromadb` or `faiss` with `sentence-transformers` for FEN position embeddings
+- **Current Implementation**: Direct API calls without RAG (simplified for v0.1.0)
+- **Future RAG Setup**: Use `chromadb` or `faiss` with `sentence-transformers` for FEN position embeddings
 - **Prompt Pattern**: "Analyze this PGN [insert PGN]. Highlight mistakes in [opening/endgame]. Suggest improvements with examples."
-- **Context Retrieval**: Query vector DB for similar positions from user's game history
+- **Context Retrieval**: Future implementation will query vector DB for similar positions from user's game history
 
 ## Development Workflows
 
@@ -78,9 +98,12 @@ for move in game.mainline_moves():
 ```
 
 ### Packaging
-- Use PyInstaller: `pyinstaller --onefile app.py`
-- Bundle Stockfish binary with the executable
+- Use PyInstaller: `pyinstaller --onefile app.py` or automated scripts
+- Bundle all dependencies including python-chess, tkinter, and requests
 - Handle cross-platform paths for engine binary
+- macOS: Use `build_macos.sh` for automated .app bundle creation (35MB)
+- Windows/Linux: Use `build.py` for cross-platform executables
+- Output: Standalone executables that work without Python installation
 
 ## Project Conventions
 
@@ -112,16 +135,37 @@ for move in game.mainline_moves():
 
 ## File Organization
 ```
-chess_analyzer/
-├── data/           # SQLite database files
-├── engines/        # Stockfish binaries
+chess-analyzer/
+├── .github/
+│   ├── workflows/          # CI/CD pipelines
+│   └── ISSUE_TEMPLATE/     # GitHub issue templates
 ├── src/
-│   ├── api/        # Chess.com API clients
-│   ├── db/         # Database models and queries
-│   ├── analysis/   # Chess engine integration
-│   ├── ai/         # LLM and RAG components
-│   └── ui/         # CLI/GUI interfaces
-├── tests/          # Unit and integration tests
-└── requirements.txt
+│   ├── api/               # Chess.com API integration
+│   │   └── client.py      # API client with rate limiting
+│   ├── db/                # SQLite database layer
+│   ├── analysis/          # Chess engine integration
+│   ├── ai/                # AI/LLM clients (Grok integration)
+│   ├── gui.py            # Tkinter GUI application
+│   └── main.py           # CLI entry point with click framework
+├── tests/                 # Unit and integration tests
+├── dist/                  # Built executables (generated)
+│   └── ChessAnalyzer.app  # macOS application bundle (35MB)
+├── build/                 # Build artifacts (generated)
+├── requirements.txt       # Python dependencies
+├── build.py              # Cross-platform packaging script
+├── build_macos.sh        # macOS-specific build script (automated)
+├── build_simple.sh       # Simple build script
+├── ChessAnalyzer.spec    # PyInstaller configuration (cross-platform)
+├── ChessAnalyzer_macos.spec  # macOS-specific PyInstaller config
+├── config.local.ini.example  # Example configuration file
+├── .gitignore           # Excludes config.local.ini and build artifacts
+├── CHANGELOG.md         # Version history
+├── CONTRIBUTING.md      # Development guidelines
+├── ROADMAP.md          # Future development plans
+├── SECURITY.md          # Security policy
+├── CODE_OF_CONDUCT.md   # Community guidelines
+├── LICENSE             # MIT License
+├── project_plan.md     # Implementation plan and status
+└── README.md           # User documentation
 ```</content>
 <parameter name="filePath">/Users/nmaine/local copy github/chess analyzer/.github/copilot-instructions.md

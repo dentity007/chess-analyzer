@@ -190,12 +190,40 @@ class ChessComClient:
             return False
 
     def get_game_archives(self, username: str) -> List[str]:
-        """Get list of monthly game archive URLs for a player."""
+        """Get list of monthly game archive URLs for a player.
+
+        Chess.com organizes games into monthly archives. This method retrieves
+        the list of all available monthly archive URLs for a given username.
+
+        Args:
+            username: Chess.com username to get archives for
+
+        Returns:
+            List of archive URLs in format:
+            https://api.chess.com/pub/player/{username}/games/{YYYY}/{MM}
+
+        Note: This includes all historical months where the player had games.
+        """
         data = self._get(f"/player/{username}/games/archives")
         return data['archives']
 
     def get_games_from_archive(self, archive_url: str) -> List[Dict]:
-        """Get all games from a specific monthly archive."""
+        """Get all games from a specific monthly archive.
+
+        Fetches all games from a single monthly archive URL. Each archive
+        contains all games played by the user in that specific month.
+
+        Args:
+            archive_url: Full URL to a monthly game archive
+
+        Returns:
+            List of game dictionaries, each containing:
+            - game_id: Unique game identifier
+            - pgn: Complete PGN string of the game
+            - end_time: Unix timestamp when game ended
+            - white_username, black_username: Player usernames
+            - result: Game result (e.g., "1-0", "0-1", "1/2-1/2")
+        """
         self._rate_limit()
         response = requests.get(archive_url)
         response.raise_for_status()
@@ -203,7 +231,29 @@ class ChessComClient:
 
     def get_all_games(self, username: str, start_date: Optional[datetime] = None,
                      end_date: Optional[datetime] = None) -> List[Dict]:
-        """Get all games for a player, optionally filtered by date range."""
+        """Get all games for a player, optionally filtered by date range.
+
+        This is the main method for fetching a player's complete game history.
+        It retrieves games from all available monthly archives and optionally
+        filters them by date range.
+
+        The process:
+        1. Get list of all monthly archive URLs for the player
+        2. Fetch games from each archive (with rate limiting)
+        3. Combine all games into a single list
+        4. Apply date filtering if requested
+
+        Args:
+            username: Chess.com username to fetch games for
+            start_date: Optional start date filter (inclusive)
+            end_date: Optional end date filter (inclusive)
+
+        Returns:
+            List of game dictionaries (same format as get_games_from_archive)
+
+        Note: This can fetch hundreds or thousands of games depending on
+        the player's history. Consider using date filters for large datasets.
+        """
         archives = self.get_game_archives(username)
         all_games = []
 

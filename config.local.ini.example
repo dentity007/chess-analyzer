@@ -1,0 +1,28 @@
+# Chess Analyzer Local Configuration - Example Template
+# ====================================================
+#
+# This is an EXAMPLE file to help contributors set up their local configuration.
+# DO NOT commit the actual config.local.ini file to version control.
+#
+# To use this:
+# 1. Copy this file to config.local.ini
+# 2. Replace the placeholder values with your actual credentials
+# 3. The config.local.ini file will be automatically ignored by Git
+#
+# SECURITY WARNING:
+# - Never commit config.local.ini to version control
+# - Keep your credentials secure and private
+# - Use strong, unique passwords
+
+[chess_com]
+# Your Chess.com username (without @domain.com)
+# Example: username = mychessusername
+username = your_chess_username_here
+
+# Your Chess.com password
+# IMPORTANT: Replace with your actual password
+password = your_password_here
+
+# Note: This is for testing purposes only
+# In production, users should use their own credentials
+# The application will work without these credentials for analyzing public games
