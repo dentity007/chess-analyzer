@@ -90,7 +90,9 @@ CORS(app, resources={
         "supports_credentials": True
     }
 })
-app.secret_key = 'chess-analyzer-secret-key'
+# Use a secure random secret key for sessions
+import secrets
+app.secret_key = secrets.token_hex(32)
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
