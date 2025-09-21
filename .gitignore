@@ -135,7 +135,7 @@ stockfish*
 # IMPORTANT: These files contain sensitive credentials and should NEVER be committed to Git
 secrets.json
 config.json
-config.local.ini  # Chess.com credentials for local development/testing
+config.local.ini
 config.local.ini.example  # Template file (should not be modified and committed)
 *.key
 
@@ -151,4 +151,3 @@ temp/
 # Build artifacts
 ChessAnalyzer.exe
 ChessAnalyzer.app
-ChessAnalyzer
