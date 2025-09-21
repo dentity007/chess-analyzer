@@ -51,6 +51,8 @@ We will keep you informed about our progress throughout the process of fixing th
 
 #### API Keys and Credentials
 - **xAI API Key**: Store securely, never commit to version control
+- **OpenAI API Key**: Store securely for GPT-4 analysis features
+- **Anthropic API Key**: Store securely for Claude analysis features
 - **Chess.com Credentials**: Optional for future premium features, stored locally in `config.local.ini`
 - **Local Config File**: `config.local.ini` is automatically excluded from Git commits
 - **Database**: Local SQLite files contain your game data
