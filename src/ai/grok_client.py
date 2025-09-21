@@ -39,6 +39,10 @@ Configuration:
     # Environment variable
     export XAI_API_KEY=your_api_key_here
 
+    # Or in config.local.ini
+    [ai]
+    api_key = your_xai_api_key_here
+
     # Or pass directly to constructor
     client = GrokClient(api_key='your_key')
 
@@ -72,17 +76,65 @@ import requests
 import json
 from typing import Dict, Optional
 import os
+from pathlib import Path
 
-class GrokClient:
+from . import AIClient
+
+
+class GrokClient(AIClient):
     """Client for xAI Grok API integration."""
 
     BASE_URL = "https://api.x.ai/v1"  # Placeholder - check actual xAI API endpoint
 
     def __init__(self, api_key: Optional[str] = None):
-        """Initialize Grok client with API key."""
-        self.api_key = api_key or os.getenv("XAI_API_KEY")
+        """Initialize Grok client with API key.
+
+        Loads API key from multiple sources in order of priority:
+        1. Explicitly passed api_key parameter
+        2. XAI_API_KEY environment variable
+        3. config.local.ini [ai] xai_api_key
+        4. Fallback to basic analysis without AI
+
+        Args:
+            api_key: Optional API key to use directly
+        """
+        # Try multiple sources for API key
+        final_api_key = api_key or os.getenv("XAI_API_KEY") or self._load_api_key_from_config()
+
+        # Initialize parent class
+        super().__init__(api_key=final_api_key, name="xAI Grok")
+
         if not self.api_key:
             print("Warning: No xAI API key provided. AI features will be limited.")
+        else:
+            print("✓ xAI Grok API key loaded successfully")
+
+    def is_available(self) -> bool:
+        """Check if Grok client is available for use."""
+        return bool(self.api_key)
+
+    def _load_api_key_from_config(self) -> Optional[str]:
+        """Load API key from config.local.ini file.
+
+        Returns:
+            API key string if found, None otherwise
+        """
+        config_path = Path(__file__).parent.parent.parent / "config.local.ini"
+
+        if config_path.exists():
+            try:
+                import configparser
+                config = configparser.ConfigParser()
+                config.read(config_path)
+
+                if 'ai' in config and 'xai_api_key' in config['ai']:
+                    api_key = config['ai']['xai_api_key'].strip()
+                    if api_key:
+                        return api_key
+            except Exception as e:
+                print(f"⚠ Failed to load xAI API key from config: {e}")
+
+        return None
 
     def get_chess_advice(self, pgn: str, analysis_data: Dict) -> str:
         """Get AI-powered chess advice for a game."""

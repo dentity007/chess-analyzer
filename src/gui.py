@@ -172,6 +172,9 @@ class ChessAnalyzerGUI:
         self.password_entry = ttk.Entry(self.main_frame, textvariable=self.password_var, width=30, show="*")
         self.password_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=(10, 0))
 
+        # AI API key (stored internally, not shown in main UI)
+        self.ai_key_var = tk.StringVar()
+
         # Credential buttons frame
         self.cred_buttons_frame = ttk.Frame(self.main_frame)
         self.cred_buttons_frame.grid(row=2, column=0, columnspan=2, pady=5)
@@ -245,14 +248,14 @@ class ChessAnalyzerGUI:
         self.output_text.tag_configure("info", foreground="blue")
 
     def _show_credentials_dialog(self):
-        """Show a dialog for managing Chess.com credentials."""
+        """Show a dialog for managing Chess.com credentials and AI API keys."""
         try:
             logging.info("Opening credentials dialog...")
 
             # Create a simple dialog without complex framing
             dialog = tk.Toplevel(self.root)
-            dialog.title("Chess.com Credentials")
-            dialog.geometry("400x200")
+            dialog.title("Configuration Settings")
+            dialog.geometry("500x350")
             dialog.resizable(False, False)
             dialog.transient(self.root)
             dialog.grab_set()
@@ -260,28 +263,70 @@ class ChessAnalyzerGUI:
             # Center the dialog
             screen_width = dialog.winfo_screenwidth()
             screen_height = dialog.winfo_screenheight()
-            x = (screen_width - 400) // 2
-            y = (screen_height - 200) // 2
-            dialog.geometry(f"400x200+{x}+{y}")
+            x = (screen_width - 500) // 2
+            y = (screen_height - 350) // 2
+            dialog.geometry(f"500x350+{x}+{y}")
 
             # Simple layout with direct widgets
             # Title
-            title = tk.Label(dialog, text="Chess.com Credentials", font=("Arial", 14, "bold"))
+            title = tk.Label(dialog, text="Configuration Settings", font=("Arial", 14, "bold"))
             title.pack(pady=10)
 
+            # Chess.com section
+            chess_frame = tk.LabelFrame(dialog, text="Chess.com Credentials", padx=10, pady=5)
+            chess_frame.pack(fill=tk.X, padx=20, pady=(0, 10))
+
             # Username
-            username_label = tk.Label(dialog, text="Username:")
-            username_label.pack(anchor=tk.W, padx=50)
+            username_label = tk.Label(chess_frame, text="Username:")
+            username_label.pack(anchor=tk.W)
             username_var = tk.StringVar(value=self.username_var.get())
-            username_entry = tk.Entry(dialog, textvariable=username_var, width=30, font=("Arial", 11))
-            username_entry.pack(pady=(5, 10), padx=50, fill=tk.X)
+            username_entry = tk.Entry(chess_frame, textvariable=username_var, width=40, font=("Arial", 11))
+            username_entry.pack(pady=(5, 10), fill=tk.X)
 
             # Password
-            password_label = tk.Label(dialog, text="Password:")
-            password_label.pack(anchor=tk.W, padx=50)
+            password_label = tk.Label(chess_frame, text="Password:")
+            password_label.pack(anchor=tk.W)
             password_var = tk.StringVar(value=self.password_var.get())
-            password_entry = tk.Entry(dialog, textvariable=password_var, width=30, show="*", font=("Arial", 11))
-            password_entry.pack(pady=(5, 20), padx=50, fill=tk.X)
+            password_entry = tk.Entry(chess_frame, textvariable=password_var, width=40, show="*", font=("Arial", 11))
+            password_entry.pack(pady=(5, 10), fill=tk.X)
+
+            # AI section with provider selection
+            ai_frame = tk.LabelFrame(dialog, text="AI Configuration (Optional)", padx=10, pady=5)
+            ai_frame.pack(fill=tk.X, padx=20, pady=(0, 20))
+
+            # Provider selection
+            provider_label = tk.Label(ai_frame, text="AI Provider:")
+            provider_label.pack(anchor=tk.W)
+            provider_var = tk.StringVar(value=getattr(self, 'ai_provider_var', tk.StringVar()).get() or "xai")
+            provider_combo = ttk.Combobox(ai_frame, textvariable=provider_var,
+                                        values=["xai", "openai", "anthropic"], state="readonly")
+            provider_combo.pack(pady=(5, 10), fill=tk.X)
+            provider_combo.set(provider_var.get())
+
+            # API Key input (dynamic based on provider)
+            api_key_label = tk.Label(ai_frame, text="API Key:")
+            api_key_label.pack(anchor=tk.W)
+            ai_key_var = tk.StringVar(value=getattr(self, 'ai_key_var', tk.StringVar()).get())
+            ai_entry = tk.Entry(ai_frame, textvariable=ai_key_var, width=40, show="*", font=("Arial", 11))
+            ai_entry.pack(pady=(5, 5), fill=tk.X)
+
+            # Provider info
+            def update_provider_info(*args):
+                provider = provider_var.get()
+                if provider == "xai":
+                    info_text = "Get key from: https://x.ai/api"
+                elif provider == "openai":
+                    info_text = "Get key from: https://platform.openai.com/api-keys"
+                elif provider == "anthropic":
+                    info_text = "Get key from: https://console.anthropic.com/"
+                else:
+                    info_text = ""
+                provider_info.config(text=info_text)
+
+            provider_var.trace("w", update_provider_info)
+            provider_info = tk.Label(ai_frame, text="", font=("Arial", 9), fg="blue")
+            provider_info.pack(anchor=tk.W)
+            update_provider_info()  # Initialize
 
             # Buttons
             button_frame = tk.Frame(dialog)
@@ -290,12 +335,21 @@ class ChessAnalyzerGUI:
             def save_and_close():
                 self.username_var.set(username_var.get())
                 self.password_var.set(password_var.get())
+                if not hasattr(self, 'ai_key_var'):
+                    self.ai_key_var = tk.StringVar()
+                if not hasattr(self, 'ai_provider_var'):
+                    self.ai_provider_var = tk.StringVar()
+                self.ai_key_var.set(ai_key_var.get())
+                self.ai_provider_var.set(provider_var.get())
                 self._save_credentials()
                 dialog.destroy()
 
             def test_and_close():
                 self.username_var.set(username_var.get())
                 self.password_var.set(password_var.get())
+                if not hasattr(self, 'ai_key_var'):
+                    self.ai_key_var = tk.StringVar()
+                self.ai_key_var.set(ai_var.get())
                 self._test_authentication()
                 dialog.destroy()
 
@@ -533,9 +587,11 @@ class ChessAnalyzerGUI:
         self.root.update_idletasks()
 
     def _save_credentials(self):
-        """Save entered credentials to config.local.ini."""
+        """Save entered credentials and AI API key to config.local.ini."""
         username = self.username_var.get().strip()
         password = self.password_var.get()
+        ai_key = getattr(self, 'ai_key_var', tk.StringVar()).get().strip()
+        ai_provider = getattr(self, 'ai_provider_var', tk.StringVar()).get().strip()
 
         if not username:
             messagebox.showerror("Error", "Please enter a username")
@@ -559,19 +615,45 @@ class ChessAnalyzerGUI:
             if config_path.exists():
                 config.read(config_path)
 
-            # Set credentials
+            # Set Chess.com credentials
             if 'chess_com' not in config:
                 config.add_section('chess_com')
 
             config['chess_com']['username'] = username
             config['chess_com']['password'] = password
 
+            # Set AI API key if provided
+            if ai_key and ai_provider:
+                if 'ai' not in config:
+                    config.add_section('ai')
+
+                # Clear all provider keys first
+                for provider_key in ['xai_api_key', 'openai_api_key', 'anthropic_api_key']:
+                    if config.has_option('ai', provider_key):
+                        config.remove_option('ai', provider_key)
+
+                # Set the selected provider's key
+                if ai_provider == "xai":
+                    config['ai']['xai_api_key'] = ai_key
+                elif ai_provider == "openai":
+                    config['ai']['openai_api_key'] = ai_key
+                elif ai_provider == "anthropic":
+                    config['ai']['anthropic_api_key'] = ai_key
+            elif 'ai' in config:
+                # Remove all AI keys if no key provided
+                for provider_key in ['xai_api_key', 'openai_api_key', 'anthropic_api_key']:
+                    if config.has_option('ai', provider_key):
+                        config.remove_option('ai', provider_key)
+
             # Save config
             with open(config_path, 'w') as f:
                 config.write(f)
 
-            self._log_output(f"✓ Credentials saved for user: {username}\n", "success")
-            messagebox.showinfo("Success", "Credentials saved successfully!")
+            saved_items = [f"credentials for user: {username}"]
+            if ai_key and ai_provider:
+                saved_items.append(f"{ai_provider} API key")
+            self._log_output(f"✓ Settings saved: {', '.join(saved_items)}\n", "success")
+            messagebox.showinfo("Success", "Settings saved successfully!")
 
         except Exception as e:
             self._log_output(f"✗ Error saving credentials: {e}\n", "error")
@@ -643,13 +725,44 @@ class ChessAnalyzerGUI:
                 self.username_var.set(username)
                 self.password_var.set(password)
 
-                if username:
-                    self._log_output(f"✓ Loaded credentials for user: {username}\n", "success")
-                    messagebox.showinfo("Success", "Credentials loaded successfully!")
+            # Load AI API key and provider
+            ai_key = ''
+            ai_provider = ''
+            if 'ai' in config:
+                # Check for each provider key
+                if config['ai'].get('xai_api_key'):
+                    ai_key = config['ai'].get('xai_api_key')
+                    ai_provider = 'xai'
+                elif config['ai'].get('openai_api_key'):
+                    ai_key = config['ai'].get('openai_api_key')
+                    ai_provider = 'openai'
+                elif config['ai'].get('anthropic_api_key'):
+                    ai_key = config['ai'].get('anthropic_api_key')
+                    ai_provider = 'anthropic'
                 else:
-                    messagebox.showinfo("Info", "No credentials found in config file")
+                    # Fallback for old config format
+                    ai_key = config['ai'].get('api_key', '')
+                    ai_provider = 'xai'  # Default to xAI for backward compatibility
+
+            if not hasattr(self, 'ai_key_var'):
+                self.ai_key_var = tk.StringVar()
+            if not hasattr(self, 'ai_provider_var'):
+                self.ai_provider_var = tk.StringVar()
+
+            self.ai_key_var.set(ai_key)
+            self.ai_provider_var.set(ai_provider)
+
+            loaded_items = []
+            if username:
+                loaded_items.append(f"credentials for user: {username}")
+            if ai_key and ai_provider:
+                loaded_items.append(f"{ai_provider} API key")
+
+            if loaded_items:
+                self._log_output(f"✓ Loaded settings: {', '.join(loaded_items)}\n", "success")
+                messagebox.showinfo("Success", "Settings loaded successfully!")
             else:
-                messagebox.showinfo("Info", "No Chess.com section found in config file")
+                messagebox.showinfo("Info", "No settings found in config file")
 
         except Exception as e:
             self._log_output(f"✗ Error loading credentials: {e}\n", "error")

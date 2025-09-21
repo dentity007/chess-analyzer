@@ -58,7 +58,7 @@ The web interface provides a modern, responsive alternative to the desktop GUI w
 [![macOS Build](https://img.shields.io/badge/macOS-Ready-green.svg)](https://github.com/dentity007/chess-analyzer/releases)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
 
-**A professional cross-platform desktop application for analyzing chess games from Chess.com with AI-powered insights and comprehensive game analysis.**
+**A professional cross-platform desktop application for analyzing chess games from Chess.com with multi-provider AI-powered insights and comprehensive game analysis.**
 
 Chess Analyzer provides chess players with detailed move-by-move analysis, blunder detection, and personalized improvement suggestions powered by xAI Grok. Features both modern GUI and command-line interfaces with local database storage.
 
@@ -71,7 +71,9 @@ Chess Analyzer provides chess players with detailed move-by-move analysis, blund
 - **Position Evaluation**: Static analysis with best move suggestions using Stockfish engine
 - **Batch Processing**: Analyze multiple games simultaneously with progress tracking
 
-### 🤖 AI-Powered Insights (xAI Grok Integration)
+### 🤖 AI-Powered Insights (Multi-Provider Support)
+- **Multiple AI Providers**: Choose from xAI Grok, OpenAI GPT-4, or Anthropic Claude
+- **Automatic Fallback**: System automatically selects the first available AI provider
 - **Personalized Advice**: Context-aware chess improvement recommendations
 - **Strategic Guidance**: Opening, middlegame, and endgame strategy suggestions
 - **Mistake Analysis**: Detailed explanations of errors with improvement tips
@@ -225,6 +227,30 @@ Create `config.local.ini` in the project root:
 [chess_com]
 username = your_chess_username
 password = your_password  # Optional, for premium features
+
+[ai]
+api_key = your_xai_api_key  # Optional, enables AI-powered analysis
+```
+
+**AI Configuration:**
+- **xAI Grok**: Get your API key from [x.ai/api](https://x.ai/api)
+- **OpenAI GPT**: Get your API key from [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- **Anthropic Claude**: Get your API key from [console.anthropic.com](https://console.anthropic.com)
+- Add the appropriate key to the `[ai]` section for enhanced chess analysis
+- The system automatically uses the first available AI provider
+- Without API keys, basic analysis is still available
+
+**Supported AI Providers:**
+- **xAI Grok**: Specialized chess analysis with natural language explanations
+- **OpenAI GPT-4**: Advanced strategic analysis and improvement suggestions
+- **Anthropic Claude**: Balanced analysis with detailed position evaluation
+
+**Configuration Example:**
+```ini
+[ai]
+xai_api_key = your_xai_key_here
+openai_api_key = your_openai_key_here
+anthropic_api_key = your_anthropic_key_here
 ```
 
 **Note:** The config file is automatically excluded from Git for security.
@@ -290,11 +316,21 @@ For future premium features and testing, you can store Chess.com credentials loc
 2. **Security Note**: This file is automatically excluded from Git commits via `.gitignore`
 
 ### AI Features Setup
-1. Get an xAI API key from [x.ai/api](https://x.ai/api)
-2. Set the environment variable:
-   ```bash
-   export XAI_API_KEY=your_api_key_here
-   ```
+Enable AI-powered chess analysis by configuring an xAI API key:
+
+**Option 1: Environment Variable**
+```bash
+export XAI_API_KEY=your_api_key_here
+```
+
+**Option 2: Configuration File**
+Add to your `config.local.ini`:
+```ini
+[ai]
+api_key = your_xai_api_key_here
+```
+
+Get your API key from [x.ai/api](https://x.ai/api)
 
 ### Stockfish Engine
 The app automatically detects Stockfish in these locations:
