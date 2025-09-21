@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Multi-Provider AI System**: Support for xAI Grok, OpenAI GPT-4, and Anthropic Claude
+- **Abstract AI Architecture**: Unified interface for all AI providers with automatic fallback
+- **Provider Selection GUI**: Dynamic AI provider selection in settings dialog
+- **Enhanced Configuration**: Support for multiple AI provider API keys
+- **Automatic Provider Detection**: System selects first available AI provider
+- **OpenAI GPT-4 Client**: Full implementation with GPT-4 model support
+- **Anthropic Claude Client**: Complete Claude-3 integration
+- **Improved Error Handling**: Better fallback mechanisms when AI providers unavailable
 - **Local Credential Storage**: Secure Chess.com credential management in `config.local.ini`
 - **Authentication Testing**: New `auth-test` CLI command for credential validation
 - **Enhanced Security**: Automatic exclusion of credential files from Git commits
@@ -17,11 +25,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI/CD pipeline configuration
 
 ### Changed
+- **AI System Refactoring**: GrokClient now inherits from unified AIClient base class
+- **GUI Settings Enhancement**: Provider selection and dynamic API key input
+- **Configuration System**: Updated to support multiple AI provider keys
+- **Documentation Updates**: README.md and config templates updated for multi-provider support
 - Updated README with production-ready documentation
 - Improved error handling and user feedback
 - Enhanced API client with credential support
 
 ### Fixed
+- **Abstract Class Implementation**: Fixed GrokClient missing is_available method
+- **GUI Provider Loading**: Proper loading of selected AI provider from config
+- **Configuration Migration**: Backward compatibility with existing single-provider configs
 - Minor bug fixes and performance improvements
 
 ## [0.1.0] - 2025-09-20
