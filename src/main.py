@@ -36,7 +36,7 @@ from db.database import ChessDatabase
 from analysis.analyzer import ChessAnalyzer
 from ai.grok_client import GrokClient
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.option('--gui', is_flag=True, help='Launch GUI interface')
 @click.version_option(version="0.1.0")
 def cli(gui):
@@ -55,7 +55,16 @@ def cli(gui):
         main()
         return
 
-    # Display authentication status on startup
+    # Check if we're running without any subcommands (e.g., double-clicked)
+    # In this case, automatically launch the GUI
+    ctx = click.get_current_context()
+    if ctx.invoked_subcommand is None:
+        # No subcommand provided - launch GUI for double-click usability
+        from gui import main
+        main()
+        return
+
+    # Display authentication status on startup (only for CLI usage)
     # This shows whether local credentials are configured
     client = ChessComClient()
     if client.username:
@@ -71,22 +80,43 @@ def cli(gui):
 @cli.command()
 @click.argument('username')
 def fetch(username):
-    """Fetch games for a Chess.com username."""
+    """Fetch games for a Chess.com username.
+
+    This command retrieves all available games for the specified Chess.com user
+    and stores them in the local SQLite database for analysis.
+
+    Args:
+        username: Chess.com username to fetch games for
+
+    Process:
+    1. Initialize Chess.com API client
+    2. Initialize local database connection
+    3. Fetch all games from Chess.com API
+    4. Store games in database with proper error handling
+    5. Display results to user
+    """
     click.echo(f"Fetching games for user: {username}")
-    
+
+    # Initialize API client for Chess.com communication
     client = ChessComClient()
+    # Initialize database for local game storage
     db = ChessDatabase()
-    
+
     try:
+        # Fetch all available games for the user
+        # This may take time for users with many games
         games = client.get_all_games(username)
         if games:
+            # Store games in database for future analysis
             db.insert_games_batch(games)
             click.echo(f"Successfully fetched and stored {len(games)} games for {username}")
         else:
             click.echo(f"No games found for {username}")
     except Exception as e:
+        # Handle any errors during fetching or storage
         click.echo(f"Error fetching games: {e}", err=True)
     finally:
+        # Always close database connection to prevent resource leaks
         db.close()
 
 @cli.command()

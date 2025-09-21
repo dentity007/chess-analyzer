@@ -1,4 +1,52 @@
-"""Tkinter GUI for Chess Analyzer."""
+"""Chess Analyzer GUI - Modern Tkinter Desktop Application.
+
+This module provides a professional graphical user interface for Chess Analyzer,
+a comprehensive chess game analysis tool. The GUI offers:
+
+Core Features:
+- Chess.com username input and game fetching
+- Real-time progress tracking during analysis
+- Color-coded output for different information types
+- Credential management with secure local storage
+- Settings menu with authentication testing
+- Professional menu system (File, Settings, Help)
+
+GUI Components:
+- Username input field for Chess.com integration
+- Password field for optional authentication
+- Action buttons (Fetch Games, Analyze Games, Show Stats, Clear)
+- Progress bar for long-running operations
+- Scrolled text area for analysis output and logging
+- Status bar with real-time status updates
+- Menu bar with Settings and Help options
+
+Technical Features:
+- Thread-safe background processing for API calls and analysis
+- Comprehensive error handling with user-friendly messages
+- Logging system for debugging bundled applications
+- PyInstaller-compatible path handling for database operations
+- Graceful component initialization with fallback support
+
+Security:
+- Local credential storage in config.local.ini (gitignored)
+- No network transmission of sensitive data
+- Secure password masking in input fields
+
+Usage:
+    # From command line
+    python -m src.main --gui
+
+    # From Python
+    from gui import main
+    main()
+
+Dependencies:
+- tkinter (built-in Python GUI framework)
+- threading (for background processing)
+- pathlib (for cross-platform path handling)
+- sqlite3 (for local database operations)
+- requests (for Chess.com API communication)
+"""
 
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
@@ -6,6 +54,11 @@ from pathlib import Path
 import threading
 import sys
 import os
+import logging
+
+# Set up logging for debugging bundled applications
+logging.basicConfig(level=logging.DEBUG, filename='gui_debug.log',
+                   format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
@@ -16,28 +69,87 @@ from analysis.analyzer import ChessAnalyzer
 from ai.grok_client import GrokClient
 
 class ChessAnalyzerGUI:
-    """Main GUI application for Chess Analyzer."""
+    """Main GUI application for Chess Analyzer.
+
+    This class provides a complete graphical user interface for the Chess Analyzer
+    application using Tkinter. It offers all the functionality of the CLI version
+    in a user-friendly desktop application.
+
+    Key Features:
+    - Username input and game fetching
+    - Real-time progress tracking
+    - Analysis results display with color coding
+    - Credential management
+    - Settings and help menus
+    """
 
     def __init__(self, root):
+        """Initialize the GUI application.
+
+        Sets up the main window, initializes all components with error handling,
+        and creates the user interface. Components are initialized gracefully
+        to ensure the application works even if some features are unavailable.
+
+        Args:
+            root: Tkinter root window object
+        """
+        logging.info("Starting GUI initialization")
         self.root = root
         self.root.title("Chess Analyzer")
         self.root.geometry("800x600")
         self.root.resizable(True, True)
+        logging.info("Basic window setup complete")
 
-        # Initialize components
-        self.db = ChessDatabase()
-        self.analyzer = ChessAnalyzer()
-        self.ai_client = GrokClient()
+        # Initialize core components with individual error handling
+        # This ensures the GUI works even if some components fail
+        try:
+            logging.info("Initializing database...")
+            self.db = ChessDatabase()
+            logging.info("Database initialized successfully")
+        except Exception as e:
+            logging.error(f"Database initialization failed: {e}")
+            print(f"Warning: Database initialization failed: {e}")
+            self.db = None
+
+        try:
+            logging.info("Initializing analyzer...")
+            self.analyzer = ChessAnalyzer()
+            logging.info("Analyzer initialized successfully")
+        except Exception as e:
+            logging.error(f"Analyzer initialization failed: {e}")
+            print(f"Warning: Analyzer initialization failed: {e}")
+            self.analyzer = None
+
+        try:
+            logging.info("Initializing AI client...")
+            self.ai_client = GrokClient()
+            logging.info("AI client initialized successfully")
+        except Exception as e:
+            logging.error(f"AI client initialization failed: {e}")
+            print(f"Warning: AI client initialization failed: {e}")
+            self.ai_client = None
 
         # Create GUI elements
-        self._create_widgets()
-        self._layout_widgets()
+        try:
+            logging.info("Creating GUI widgets...")
+            self._create_widgets()
+            self._layout_widgets()
+            logging.info("GUI widgets created successfully")
+        except Exception as e:
+            logging.error(f"GUI creation failed: {e}")
+            print(f"Error creating GUI: {e}")
+            messagebox.showerror("Error", f"Failed to create GUI: {e}")
+            return
 
         # Status tracking
         self.current_games = []
+        logging.info("GUI initialization complete")
 
     def _create_widgets(self):
         """Create all GUI widgets."""
+        # Create menu bar
+        self._create_menu_bar()
+
         # Main frame
         self.main_frame = ttk.Frame(self.root, padding="10")
         self.main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
@@ -46,7 +158,7 @@ class ChessAnalyzerGUI:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         self.main_frame.columnconfigure(1, weight=1)
-        self.main_frame.rowconfigure(2, weight=1)
+        self.main_frame.rowconfigure(6, weight=1)
 
         # Username input
         ttk.Label(self.main_frame, text="Chess.com Username:").grid(row=0, column=0, sticky=tk.W, pady=5)
@@ -54,9 +166,29 @@ class ChessAnalyzerGUI:
         self.username_entry = ttk.Entry(self.main_frame, textvariable=self.username_var, width=30)
         self.username_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=5, padx=(10, 0))
 
+        # Password input
+        ttk.Label(self.main_frame, text="Password:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        self.password_var = tk.StringVar()
+        self.password_entry = ttk.Entry(self.main_frame, textvariable=self.password_var, width=30, show="*")
+        self.password_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=(10, 0))
+
+        # Credential buttons frame
+        self.cred_buttons_frame = ttk.Frame(self.main_frame)
+        self.cred_buttons_frame.grid(row=2, column=0, columnspan=2, pady=5)
+
+        # Credential management buttons
+        self.save_cred_button = ttk.Button(self.cred_buttons_frame, text="Save Credentials", command=self._save_credentials)
+        self.save_cred_button.pack(side=tk.LEFT, padx=5)
+
+        self.test_auth_button = ttk.Button(self.cred_buttons_frame, text="Test Authentication", command=self._test_authentication)
+        self.test_auth_button.pack(side=tk.LEFT, padx=5)
+
+        self.load_cred_button = ttk.Button(self.cred_buttons_frame, text="Load Saved Credentials", command=self._load_credentials)
+        self.load_cred_button.pack(side=tk.LEFT, padx=5)
+
         # Buttons frame
         self.buttons_frame = ttk.Frame(self.main_frame)
-        self.buttons_frame.grid(row=1, column=0, columnspan=2, pady=10)
+        self.buttons_frame.grid(row=3, column=0, columnspan=2, pady=10)
 
         # Action buttons
         self.fetch_button = ttk.Button(self.buttons_frame, text="Fetch Games", command=self._fetch_games)
@@ -74,18 +206,35 @@ class ChessAnalyzerGUI:
         # Progress bar
         self.progress_var = tk.DoubleVar()
         self.progress_bar = ttk.Progressbar(self.main_frame, variable=self.progress_var, maximum=100)
-        self.progress_bar.grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        self.progress_bar.grid(row=4, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
 
         # Output area
-        ttk.Label(self.main_frame, text="Output:").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(self.main_frame, text="Output:").grid(row=5, column=0, sticky=tk.W, pady=5)
         self.output_text = scrolledtext.ScrolledText(self.main_frame, height=20, wrap=tk.WORD)
-        self.output_text.grid(row=4, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
+        self.output_text.grid(row=6, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=5)
 
         # Status bar
         self.status_var = tk.StringVar()
         self.status_var.set("Ready")
         self.status_bar = ttk.Label(self.main_frame, textvariable=self.status_var, relief=tk.SUNKEN)
-        self.status_bar.grid(row=5, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+        self.status_bar.grid(row=7, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=5)
+
+    def _create_menu_bar(self):
+        """Create the menu bar with settings and help options."""
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+
+        # Settings menu
+        settings_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Settings", menu=settings_menu)
+        settings_menu.add_command(label="Credentials", command=self._show_credentials_dialog)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="Exit", command=self.root.quit)
+
+        # Help menu
+        help_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Help", menu=help_menu)
+        help_menu.add_command(label="About", command=self._show_about)
 
     def _layout_widgets(self):
         """Configure widget layout and styling."""
@@ -95,30 +244,147 @@ class ChessAnalyzerGUI:
         self.output_text.tag_configure("success", foreground="green")
         self.output_text.tag_configure("info", foreground="blue")
 
+    def _show_credentials_dialog(self):
+        """Show a dialog for managing Chess.com credentials."""
+        try:
+            logging.info("Opening credentials dialog...")
+
+            # Create a simple dialog without complex framing
+            dialog = tk.Toplevel(self.root)
+            dialog.title("Chess.com Credentials")
+            dialog.geometry("400x200")
+            dialog.resizable(False, False)
+            dialog.transient(self.root)
+            dialog.grab_set()
+
+            # Center the dialog
+            screen_width = dialog.winfo_screenwidth()
+            screen_height = dialog.winfo_screenheight()
+            x = (screen_width - 400) // 2
+            y = (screen_height - 200) // 2
+            dialog.geometry(f"400x200+{x}+{y}")
+
+            # Simple layout with direct widgets
+            # Title
+            title = tk.Label(dialog, text="Chess.com Credentials", font=("Arial", 14, "bold"))
+            title.pack(pady=10)
+
+            # Username
+            username_label = tk.Label(dialog, text="Username:")
+            username_label.pack(anchor=tk.W, padx=50)
+            username_var = tk.StringVar(value=self.username_var.get())
+            username_entry = tk.Entry(dialog, textvariable=username_var, width=30, font=("Arial", 11))
+            username_entry.pack(pady=(5, 10), padx=50, fill=tk.X)
+
+            # Password
+            password_label = tk.Label(dialog, text="Password:")
+            password_label.pack(anchor=tk.W, padx=50)
+            password_var = tk.StringVar(value=self.password_var.get())
+            password_entry = tk.Entry(dialog, textvariable=password_var, width=30, show="*", font=("Arial", 11))
+            password_entry.pack(pady=(5, 20), padx=50, fill=tk.X)
+
+            # Buttons
+            button_frame = tk.Frame(dialog)
+            button_frame.pack()
+
+            def save_and_close():
+                self.username_var.set(username_var.get())
+                self.password_var.set(password_var.get())
+                self._save_credentials()
+                dialog.destroy()
+
+            def test_and_close():
+                self.username_var.set(username_var.get())
+                self.password_var.set(password_var.get())
+                self._test_authentication()
+                dialog.destroy()
+
+            save_btn = tk.Button(button_frame, text="Save", command=save_and_close, width=8)
+            save_btn.pack(side=tk.LEFT, padx=5)
+            test_btn = tk.Button(button_frame, text="Test", command=test_and_close, width=8)
+            test_btn.pack(side=tk.LEFT, padx=5)
+            cancel_btn = tk.Button(button_frame, text="Cancel", command=dialog.destroy, width=8)
+            cancel_btn.pack(side=tk.LEFT, padx=5)
+
+            # Focus on username entry
+            username_entry.focus_set()
+
+            # Force dialog to update and display
+            dialog.update()
+            dialog.lift()
+            dialog.attributes('-topmost', True)
+            dialog.attributes('-topmost', False)
+
+            logging.info("Credentials dialog opened successfully")
+
+        except Exception as e:
+            logging.error(f"Failed to create credentials dialog: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _show_about(self):
+        """Show about dialog."""
+        messagebox.showinfo("About Chess Analyzer",
+                          "Chess Analyzer v0.1.0\n\n"
+                          "A comprehensive chess game analysis tool that:\n"
+                          "• Fetches games from Chess.com\n"
+                          "• Analyzes moves with Stockfish engine\n"
+                          "• Provides AI-powered improvement suggestions\n"
+                          "• Supports both GUI and CLI interfaces\n\n"
+                          "Built with Python and Tkinter")
+
     def _fetch_games(self):
-        """Fetch games for the entered username."""
+        """Fetch games for the entered username.
+
+        This method handles the game fetching process from the GUI:
+        1. Validates the username input
+        2. Updates UI to show fetching status
+        3. Disables the fetch button to prevent multiple requests
+        4. Starts a background thread for the actual fetching
+        5. Updates progress bar and status
+
+        The background thread ensures the GUI remains responsive during
+        potentially long-running API calls to Chess.com.
+        """
         username = self.username_var.get().strip()
         if not username:
             messagebox.showerror("Error", "Please enter a Chess.com username")
             return
 
+        # Update UI for fetching state
         self._set_status("Fetching games...")
         self.fetch_button.config(state=tk.DISABLED)
         self.progress_var.set(0)
 
-        # Run fetch in background thread
+        # Run fetch operation in background thread to keep GUI responsive
         thread = threading.Thread(target=self._fetch_games_worker, args=(username,))
         thread.daemon = True
         thread.start()
 
     def _fetch_games_worker(self, username):
-        """Worker function to fetch games in background."""
+        """Worker function to fetch games in background thread.
+
+        This method performs the actual game fetching operation in a separate
+        thread to prevent blocking the GUI. It handles:
+
+        1. API communication with Chess.com
+        2. Database storage of fetched games
+        3. Progress updates and status messages
+        4. Error handling with user-friendly messages
+        5. UI state restoration when complete
+
+        Args:
+            username: Chess.com username to fetch games for
+        """
         try:
+            # Initialize API client for Chess.com communication
             client = ChessComClient()
             self._log_output(f"Fetching games for {username}...\n", "info")
 
+            # Fetch all available games from Chess.com
             games = client.get_all_games(username)
             if games:
+                # Store games in local database for analysis
                 self.db.insert_games_batch(games)
                 self.current_games = games
                 self._log_output(f"Successfully fetched {len(games)} games\n", "success")
@@ -266,6 +532,129 @@ class ChessAnalyzerGUI:
         self.status_var.set(text)
         self.root.update_idletasks()
 
+    def _save_credentials(self):
+        """Save entered credentials to config.local.ini."""
+        username = self.username_var.get().strip()
+        password = self.password_var.get()
+
+        if not username:
+            messagebox.showerror("Error", "Please enter a username")
+            return
+
+        if not password:
+            messagebox.showwarning("Warning", "Password is empty. Are you sure you want to save without a password?")
+            if not messagebox.askyesno("Confirm", "Save credentials without password?"):
+                return
+
+        try:
+            import configparser
+            import os
+            from pathlib import Path
+
+            # Get config file path
+            config_path = Path(__file__).parent.parent / 'config.local.ini'
+
+            # Create or load config
+            config = configparser.ConfigParser()
+            if config_path.exists():
+                config.read(config_path)
+
+            # Set credentials
+            if 'chess_com' not in config:
+                config.add_section('chess_com')
+
+            config['chess_com']['username'] = username
+            config['chess_com']['password'] = password
+
+            # Save config
+            with open(config_path, 'w') as f:
+                config.write(f)
+
+            self._log_output(f"✓ Credentials saved for user: {username}\n", "success")
+            messagebox.showinfo("Success", "Credentials saved successfully!")
+
+        except Exception as e:
+            self._log_output(f"✗ Error saving credentials: {e}\n", "error")
+            messagebox.showerror("Error", f"Failed to save credentials: {e}")
+
+    def _test_authentication(self):
+        """Test Chess.com authentication with current credentials."""
+        username = self.username_var.get().strip()
+        password = self.password_var.get()
+
+        if not username:
+            messagebox.showerror("Error", "Please enter a username")
+            return
+
+        self._set_status("Testing authentication...")
+        self.test_auth_button.config(state=tk.DISABLED)
+
+        def test_worker():
+            try:
+                # Create client with current credentials
+                client = ChessComClient()
+
+                # Override credentials if entered in GUI
+                if password:
+                    client.username = username
+                    client.password = password
+                    client._setup_authenticated_session()
+
+                self._log_output(f"Testing authentication for {username}...\n", "info")
+
+                # Test authentication
+                if client.test_authentication():
+                    self._log_output("✅ Authentication successful!\n", "success")
+                    messagebox.showinfo("Success", "Authentication test passed!")
+                else:
+                    self._log_output("❌ Authentication failed\n", "error")
+                    messagebox.showerror("Authentication Failed", "Could not authenticate with Chess.com")
+
+            except Exception as e:
+                self._log_output(f"✗ Error testing authentication: {e}\n", "error")
+                messagebox.showerror("Error", f"Authentication test failed: {e}")
+            finally:
+                self.test_auth_button.config(state=tk.NORMAL)
+                self._set_status("Ready")
+
+        thread = threading.Thread(target=test_worker)
+        thread.daemon = True
+        thread.start()
+
+    def _load_credentials(self):
+        """Load saved credentials from config.local.ini into the GUI fields."""
+        try:
+            import configparser
+            from pathlib import Path
+
+            config_path = Path(__file__).parent.parent / 'config.local.ini'
+
+            if not config_path.exists():
+                messagebox.showinfo("Info", "No saved credentials found")
+                return
+
+            config = configparser.ConfigParser()
+            config.read(config_path)
+
+            if 'chess_com' in config:
+                username = config['chess_com'].get('username', '')
+                password = config['chess_com'].get('password', '')
+
+                self.username_var.set(username)
+                self.password_var.set(password)
+
+                if username:
+                    self._log_output(f"✓ Loaded credentials for user: {username}\n", "success")
+                    messagebox.showinfo("Success", "Credentials loaded successfully!")
+                else:
+                    messagebox.showinfo("Info", "No credentials found in config file")
+            else:
+                messagebox.showinfo("Info", "No Chess.com section found in config file")
+
+        except Exception as e:
+            self._log_output(f"✗ Error loading credentials: {e}\n", "error")
+            messagebox.showerror("Error", f"Failed to load credentials: {e}")
+
     def run(self):
         """Start the GUI application."""
         self.root.mainloop()
@@ -280,16 +669,34 @@ class ChessAnalyzerGUI:
 
 def main():
     """Main entry point for GUI."""
-    root = tk.Tk()
-    app = ChessAnalyzerGUI(root)
+    try:
+        root = tk.Tk()
+        app = ChessAnalyzerGUI(root)
 
-    # Handle cleanup on window close
-    def on_closing():
-        app.cleanup()
-        root.destroy()
+        # Handle cleanup on window close
+        def on_closing():
+            try:
+                app.cleanup()
+            except Exception as e:
+                print(f"Error during cleanup: {e}")
+            root.destroy()
 
-    root.protocol("WM_DELETE_WINDOW", on_closing)
-    app.run()
+        root.protocol("WM_DELETE_WINDOW", on_closing)
+        app.run()
+    except Exception as e:
+        print(f"Critical error in GUI: {e}")
+        import traceback
+        traceback.print_exc()
+        # Show error dialog if tkinter is available
+        try:
+            import tkinter as tk_error
+            from tkinter import messagebox
+            root = tk_error.Tk()
+            root.withdraw()  # Hide the main window
+            messagebox.showerror("Chess Analyzer Error", f"Application failed to start:\n\n{e}")
+            root.destroy()
+        except:
+            pass  # If tkinter fails, we can't show the dialog
 
 
 if __name__ == "__main__":

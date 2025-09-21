@@ -193,7 +193,15 @@ fi
 
 # Make the executable inside the app bundle executable
 # This ensures the app can be launched properly
+# Make executables executable
 chmod +x "$DIST_DIR/ChessAnalyzer.app/Contents/MacOS/ChessAnalyzer"
+
+# Fix Info.plist to remove LSBackgroundOnly for GUI app
+if [ -f "$DIST_DIR/ChessAnalyzer.app/Contents/Info.plist" ]; then
+    echo "🔧 Fixing Info.plist for GUI app..."
+    # Remove LSBackgroundOnly entry to make app double-clickable
+    plutil -remove LSBackgroundOnly "$DIST_DIR/ChessAnalyzer.app/Contents/Info.plist" 2>/dev/null || true
+fi
 
 # Get file sizes for reporting
 APP_SIZE=$(du -sh "$DIST_DIR/ChessAnalyzer.app" | cut -f1)

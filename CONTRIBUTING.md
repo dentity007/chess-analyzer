@@ -1,53 +1,327 @@
 # Contributing to Chess Analyzer
 
-Thank you for your interest in contributing to Chess Analyzer! We welcome contributions from the community.
+Thank you for your interest in contributing to Chess Analyzer! 🎉
+
+Chess Analyzer is a professional chess analysis application that welcomes contributions from developers, chess enthusiasts, and the open-source community. Whether you're fixing bugs, adding features, improving documentation, or helping with testing, your contributions are valuable and appreciated.
 
 ## 🚀 Ways to Contribute
 
-- **🐛 Bug Reports**: Found a bug? [Open an issue](https://github.com/yourusername/chess-analyzer/issues)
-- **💡 Feature Requests**: Have an idea? [Start a discussion](https://github.com/yourusername/chess-analyzer/discussions)
-- **📝 Documentation**: Help improve our docs
-- **🧪 Testing**: Write or improve tests
-- **💻 Code**: Submit pull requests
+### 🐛 Bug Reports & Issues
+- **Found a bug?** [Open an issue](https://github.com/dentity007/chess-analyzer/issues) with detailed steps to reproduce
+- **Unexpected behavior?** Include error messages, screenshots, and system information
+- **Performance issues?** Provide benchmarks and system specifications
 
-## 🛠️ Development Setup
+### 💡 Feature Requests & Ideas
+- **New features?** [Start a discussion](https://github.com/dentity007/chess-analyzer/discussions) to share your ideas
+- **UI improvements?** Mockups and user experience suggestions welcome
+- **Integration ideas?** Chess platform integrations, AI providers, etc.
+
+### 📝 Documentation Improvements
+- **README updates**: Keep user guides current and comprehensive
+- **Code comments**: Improve inline documentation and docstrings
+- **API documentation**: Document new features and modules
+- **Tutorials**: Create usage examples and guides
+
+### 🧪 Testing & Quality Assurance
+- **Write tests**: Unit tests, integration tests, and end-to-end tests
+- **Test coverage**: Improve test coverage for new features
+- **Bug reproduction**: Create test cases for reported issues
+- **Cross-platform testing**: Test on different operating systems
+
+### 💻 Code Contributions
+- **Bug fixes**: Submit pull requests for issue resolutions
+- **New features**: Implement features from the roadmap
+- **Performance improvements**: Optimize analysis speed and memory usage
+- **Code refactoring**: Improve code organization and maintainability
+
+## 🛠️ Development Environment Setup
 
 ### Prerequisites
-- Python 3.8 or higher
-- Git
-- (Optional) Stockfish chess engine
+- **Python 3.8+** (required for all development)
+- **Git** (version control)
+- **Virtual Environment** (recommended for dependency management)
+- **Stockfish** (optional, for testing analysis features)
+- **GitHub Account** (for pull requests and issues)
 
-### Setup Steps
-
+### Quick Setup (macOS/Linux)
 ```bash
-# Fork the repository
-git clone https://github.com/yourusername/chess-analyzer.git
+# 1. Fork and clone the repository
+git clone https://github.com/dentity007/chess-analyzer.git
 cd chess-analyzer
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+# 2. Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
 
-# Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
+
+# 4. (Optional) Set up development tools
 pip install -r requirements-dev.txt
 
-# (Optional) Configure local credentials for testing
-# Create config.local.ini with your Chess.com credentials
+# 5. Test the installation
+python3 -m src.main --version
+python3 -m src.main --help
+```
+
+### Windows Setup
+```powershell
+# 1. Fork and clone
+git clone https://github.com/dentity007/chess-analyzer.git
+cd chess-analyzer
+
+# 2. Create virtual environment
+python -m venv .venv
+.venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Test installation
+python -m src.main --version
+```
+
+### Configuration for Development
+```bash
+# Create local configuration (optional, for testing)
 cp config.local.ini.example config.local.ini
-# Edit config.local.ini with your credentials (never commit this file!)
+# Edit config.local.ini with your test credentials
+# Note: This file is gitignored for security
 
-# Run tests to ensure everything works
-pytest tests/
-
-# Test authentication setup
-python -m src.main auth-test
-
-# Start developing
-python -m src.main --gui
+# Set up environment variables (optional)
+export XAI_API_KEY=your_test_key_here
 ```
 
 ## 📋 Development Workflow
+
+### 1. Choose an Issue or Feature
+- Check [existing issues](https://github.com/dentity007/chess-analyzer/issues) for bugs to fix
+- Review the [ROADMAP.md](ROADMAP.md) for planned features
+- Look for issues labeled `good first issue` or `help wanted`
+
+### 2. Create a Branch
+```bash
+# Create and switch to a feature branch
+git checkout -b feature/your-feature-name
+# Or for bug fixes
+git checkout -b fix/issue-number-description
+```
+
+### 3. Make Your Changes
+- **Follow the existing code style** (PEP 8, type hints, docstrings)
+- **Add tests** for new functionality
+- **Update documentation** if needed
+- **Test your changes** thoroughly
+
+### 4. Test Your Changes
+```bash
+# Run the test suite
+pytest tests/
+
+# Test specific functionality
+python3 -m src.main --gui  # Test GUI
+python3 -m src.main auth-test  # Test authentication
+python3 -m src.main fetch testuser  # Test API integration
+
+# Build and test executable (macOS)
+./build_macos.sh
+open dist/ChessAnalyzer.app
+```
+
+### 5. Commit and Push
+```bash
+# Stage your changes
+git add .
+
+# Commit with descriptive message
+git commit -m "feat: add new feature description
+
+- What was changed
+- Why it was changed
+- Any breaking changes"
+
+# Push to your fork
+git push origin feature/your-feature-name
+```
+
+### 6. Create a Pull Request
+- Go to the [repository](https://github.com/dentity007/chess-analyzer)
+- Click "New Pull Request"
+- Select your branch and provide a clear description
+- Reference any related issues
+- Wait for review and address feedback
+
+## 🎯 Coding Standards
+
+### Python Style
+- **PEP 8** compliance for code formatting
+- **Type hints** for function parameters and return values
+- **Docstrings** for all public functions and classes
+- **Descriptive variable names** (avoid single letters except loops)
+
+### Code Structure
+```python
+def function_name(param1: Type, param2: Type) -> ReturnType:
+    """Brief description of what the function does.
+
+    Args:
+        param1: Description of param1
+        param2: Description of param2
+
+    Returns:
+        Description of return value
+
+    Raises:
+        ExceptionType: When this exception is raised
+    """
+    # Implementation here
+    pass
+```
+
+### Commit Message Format
+```
+type(scope): description
+
+[optional body]
+
+[optional footer]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation
+- `style`: Code style changes
+- `refactor`: Code refactoring
+- `test`: Testing
+- `chore`: Maintenance
+
+**Examples:**
+```
+feat(auth): add OAuth2 support for Chess.com
+fix(gui): resolve crash on double-click for macOS
+docs(readme): update installation instructions
+```
+
+## 🧪 Testing Guidelines
+
+### Running Tests
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Run specific test file
+pytest tests/test_api.py
+
+# Run tests matching pattern
+pytest -k "test_auth"
+```
+
+### Writing Tests
+```python
+import pytest
+from src.api.client import ChessComClient
+
+class TestChessComClient:
+    def test_get_player_profile(self):
+        """Test fetching player profile from Chess.com API."""
+        client = ChessComClient()
+        profile = client.get_player_profile("magnuscarlsen")
+
+        assert profile is not None
+        assert "username" in profile
+        assert profile["username"] == "magnuscarlsen"
+```
+
+### Test Coverage Goals
+- **Unit Tests**: 80%+ coverage for core modules
+- **Integration Tests**: API and database interactions
+- **End-to-End Tests**: Complete user workflows
+- **Cross-Platform Tests**: Windows, macOS, Linux compatibility
+
+## 📚 Documentation Standards
+
+### README Updates
+- Keep installation instructions current
+- Update feature lists as new features are added
+- Maintain accurate prerequisites and system requirements
+- Update screenshots and examples regularly
+
+### Code Documentation
+- **Module docstrings**: Overview of module purpose and contents
+- **Class docstrings**: Class purpose, attributes, and usage
+- **Function docstrings**: Parameters, return values, exceptions
+- **Inline comments**: Complex logic explanations
+
+### API Documentation
+```python
+class ChessComClient:
+    """Client for Chess.com Public API integration.
+
+    This class provides methods to interact with Chess.com's public API
+    for fetching player data, games, and statistics.
+
+    Attributes:
+        BASE_URL: Chess.com API base URL
+        REQUEST_DELAY: Rate limiting delay between requests
+    """
+```
+
+## 🚨 Issue Reporting Guidelines
+
+### Bug Reports
+**Please include:**
+- **Steps to reproduce**: Detailed step-by-step instructions
+- **Expected behavior**: What should happen
+- **Actual behavior**: What actually happens
+- **Environment**: OS, Python version, application version
+- **Error messages**: Full error output and stack traces
+- **Screenshots**: If applicable, especially for GUI issues
+
+### Feature Requests
+**Please include:**
+- **Use case**: Why do you need this feature?
+- **Current workaround**: How do you currently handle this?
+- **Proposed solution**: Your suggested implementation
+- **Alternatives considered**: Other approaches you've thought of
+
+## 🎉 Recognition
+
+Contributors will be:
+- **Acknowledged** in release notes and documentation
+- **Listed** in CONTRIBUTORS.md file
+- **Featured** in the project's hall of fame
+- **Invited** to join the core development team for significant contributions
+
+## 📞 Getting Help
+
+- **📧 Questions**: Open a [GitHub Discussion](https://github.com/dentity007/chess-analyzer/discussions)
+- **🐛 Bugs**: [Create an Issue](https://github.com/dentity007/chess-analyzer/issues)
+- **💡 Ideas**: [Start a Discussion](https://github.com/dentity007/chess-analyzer/discussions)
+- **💬 Chat**: Join our community discussions
+
+## 📋 Checklist for Contributions
+
+### Before Submitting
+- [ ] Code follows project style guidelines
+- [ ] All tests pass (`pytest`)
+- [ ] Documentation updated if needed
+- [ ] Commit messages follow conventional format
+- [ ] No sensitive information committed
+- [ ] Tested on target platforms
+
+### Pull Request Requirements
+- [ ] Clear description of changes
+- [ ] References related issues
+- [ ] Includes tests for new functionality
+- [ ] Updates documentation
+- [ ] No merge conflicts
+- [ ] Ready for review
+
+Thank you for contributing to Chess Analyzer! Your efforts help make chess analysis more accessible and powerful for players worldwide. ♟️🤖
 
 ### 1. Choose an Issue
 - Check [open issues](https://github.com/yourusername/chess-analyzer/issues)

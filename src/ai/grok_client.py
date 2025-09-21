@@ -1,4 +1,72 @@
-"""xAI Grok API client for chess analysis and advice."""
+"""xAI Grok AI Client - Natural Language Chess Analysis and Advice.
+
+This module provides integration with xAI's Grok AI model for generating
+natural language chess analysis, improvement suggestions, and strategic advice.
+It offers both real-time analysis and fallback capabilities.
+
+Core Features:
+- xAI Grok API integration for chess-specific analysis
+- Natural language game commentary and explanations
+- Personalized improvement recommendations
+- Context-aware strategic advice
+- Fallback analysis when AI is unavailable
+
+AI Capabilities:
+- Game analysis: Complete game review with key moments
+- Move explanations: Why specific moves were good or bad
+- Strategic guidance: Opening, middlegame, and endgame advice
+- Learning recommendations: Personalized study suggestions
+- Opponent analysis: Style recognition and counter-strategies
+
+Technical Features:
+- RESTful API communication with proper error handling
+- JSON request/response processing
+- Rate limiting and retry logic with exponential backoff
+- Environment variable configuration for API keys
+- Comprehensive logging and debugging support
+
+Usage Examples:
+    # Initialize client
+    ai_client = GrokClient(api_key='your_api_key')
+
+    # Get game advice
+    advice = ai_client.get_chess_advice(pgn_string, analysis_data)
+
+    # Analyze specific position
+    position_advice = ai_client.analyze_position(fen_string, move_history)
+
+Configuration:
+    # Environment variable
+    export XAI_API_KEY=your_api_key_here
+
+    # Or pass directly to constructor
+    client = GrokClient(api_key='your_key')
+
+Fallback Behavior:
+- When API key is not available, provides basic analysis
+- When API calls fail, returns helpful error messages
+- Graceful degradation maintains application functionality
+- Offline analysis capabilities for core features
+
+Security:
+- API keys stored securely (environment variables recommended)
+- No sensitive game data transmitted without user consent
+- Secure HTTPS communication with xAI servers
+- Local processing for non-AI analysis features
+
+Error Handling:
+- Network timeout and retry logic
+- API rate limit management
+- JSON parsing error recovery
+- User-friendly error messages
+- Comprehensive exception handling
+
+Dependencies:
+- requests: HTTP client for API communication
+- json: JSON data processing
+- os: Environment variable access
+- typing: Type hints for better documentation
+"""
 
 import requests
 import json

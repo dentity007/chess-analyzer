@@ -6,6 +6,12 @@ chess.com>=1.0.0
 # CLI interface
 click>=8.1.0
 
+# Web interface
+flask>=3.0.0
+flask-cors>=4.0.0
+werkzeug>=3.0.0
+jinja2>=3.1.2
+
 # Database
 # sqlite3 is built-in to Python, no need to install
 

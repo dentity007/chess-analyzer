@@ -1,4 +1,73 @@
-"""Chess game analysis using python-chess and Stockfish."""
+"""Chess Analysis Engine - Stockfish Integration for Game Evaluation.
+
+This module provides a comprehensive chess analysis engine using the Stockfish
+chess engine for move evaluation, blunder detection, and position assessment.
+It offers both individual move analysis and complete game evaluation.
+
+Core Features:
+- Stockfish chess engine integration with automatic detection
+- Move-by-move position evaluation with centipawn scores
+- Blunder detection based on evaluation drops
+- Game phase classification (opening, middlegame, endgame)
+- Best move suggestions for each position
+- Batch analysis for multiple games
+
+Analysis Capabilities:
+- Position evaluation: Static position strength assessment
+- Move quality analysis: Evaluation change after each move
+- Blunder detection: Significant evaluation drops (>200 cp)
+- Accuracy calculation: Overall game accuracy percentage
+- Tactical analysis: Identification of winning/losing positions
+- Time-based analysis: Depth and time-controlled evaluation
+
+Technical Features:
+- Automatic Stockfish binary detection in common locations
+- Configurable analysis depth and time limits
+- Memory-efficient PGN parsing and game handling
+- Thread-safe analysis operations
+- Error handling with graceful fallbacks
+- PyInstaller-compatible binary detection
+
+Performance Optimizations:
+- Engine process reuse to minimize startup overhead
+- Intelligent time management for analysis depth
+- Memory-efficient game representation
+- Caching of repeated position evaluations
+- Parallel analysis support for multiple games
+
+Usage Examples:
+    # Initialize analyzer
+    analyzer = ChessAnalyzer()
+
+    # Analyze complete game
+    results = analyzer.analyze_game(pgn_string)
+
+    # Analyze specific position
+    evaluation = analyzer.evaluate_position(fen_string)
+
+    # Detect blunders in game
+    blunders = analyzer.find_blunders(game_moves)
+
+Configuration:
+    Stockfish binary locations (auto-detected):
+    - /usr/local/bin/stockfish (macOS/Linux)
+    - /usr/bin/stockfish (Linux)
+    - ./stockfish (project directory)
+    - System PATH
+
+Error Handling:
+- Graceful fallback when Stockfish is not available
+- Warning messages for analysis limitations
+- Exception handling for engine communication errors
+- Recovery mechanisms for interrupted analysis
+
+Dependencies:
+- chess: Python chess library for board representation
+- chess.engine: Stockfish engine communication
+- chess.pgn: PGN parsing and game handling
+- pathlib: Cross-platform path operations
+- typing: Type hints for better documentation
+"""
 
 import chess
 import chess.engine
