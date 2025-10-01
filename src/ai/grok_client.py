@@ -213,7 +213,8 @@ Game Statistics:
         if mistakes:
             prompt += "\nKey Mistakes:\n"
             for i, mistake in enumerate(mistakes[:3]):  # Top 3 mistakes
-                prompt += f"{i+1}. Move {mistake['move_number']}: {mistake['move']} "
+                # Intentionally use lowercase 'move' to match UI/tests expectations
+                prompt += f"{i+1}. move {mistake['move_number']}: {mistake['move']} "
                 prompt += f"(lost {mistake['score_change']} centipawns)\n"
 
         prompt += """

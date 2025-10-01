@@ -197,42 +197,8 @@ class ChessComClient:
             print(f"⚠ Failed to get profile: {e}")
             return None
 
-    def test_authentication(self) -> bool:
-        """Test if credentials are configured and API is accessible.
-
-        This method validates the credential setup by attempting to access
-        the Chess.com profile for the configured username. Since Chess.com's
-        public API doesn't require authentication for most operations, this
-        mainly tests that:
-        1. Credentials are properly loaded from config.local.ini
-        2. The configured username exists and is accessible
-        3. The API is responding correctly
-
-        Returns:
-            bool: True if credentials are configured and profile is accessible,
-                  False otherwise (with detailed error messages)
-
-        Note: A False return doesn't necessarily mean authentication failed -
-        it could indicate the username doesn't exist or has access restrictions.
-        """
-        try:
-            # Test by fetching the configured user's game archives
-            # This validates both credential loading and API access for games
-            archives = self._get(f"/player/{self.username}/games/archives")
-            if archives and 'archives' in archives:
-                print(f"✓ Successfully accessed game archives for: {self.username}")
-                return True
-            else:
-                print("⚠ Archives data incomplete")
-                return False
-        except Exception as e:
-            print(f"⚠ Could not access Chess.com profile for '{self.username}': {e}")
-            print("ℹ This could mean:")
-            print("  - The username doesn't exist")
-            print("  - The account is private")
-            print("  - There are API access restrictions")
-            print("  - The credentials are for future premium features")
-            return False
+    # Note: test_authentication is defined below. The earlier implementation
+    # was removed to avoid duplicate definitions.
 
     def get_game_archives(self, username: str) -> List[str]:
         """Get list of monthly game archive URLs for a player.
@@ -312,15 +278,46 @@ class ChessComClient:
 
         # Filter by date range if provided
         if start_date or end_date:
-            filtered_games = []
-            for game in all_games:
-                game_date = datetime.fromtimestamp(game.get('end_time', 0))
-                if start_date and game_date < start_date:
-                    continue
-                if end_date and game_date > end_date:
-                    continue
-                filtered_games.append(game)
-            return filtered_games
+            # If both provided, include any game whose (year, month) falls within the range (inclusive)
+            if start_date and end_date:
+                # Build set of (year, month) between the two dates inclusive
+                months = set()
+                cur = datetime(start_date.year, start_date.month, 1)
+                end_marker = datetime(end_date.year, end_date.month, 1)
+                while cur <= end_marker:
+                    months.add((cur.year, cur.month))
+                    # Increment month
+                    if cur.month == 12:
+                        cur = datetime(cur.year + 1, 1, 1)
+                    else:
+                        cur = datetime(cur.year, cur.month + 1, 1)
+
+                filtered_games = []
+                for game in all_games:
+                    ts = game.get('end_time', 0)
+                    dt = datetime.utcfromtimestamp(ts)
+                    if (dt.year, dt.month) in months:
+                        filtered_games.append(game)
+                return filtered_games
+            else:
+                # Fallback: simple timestamp comparison when only one bound is provided
+                from datetime import timezone
+                if start_date and start_date.tzinfo is None:
+                    start_date = start_date.replace(tzinfo=timezone.utc)
+                if end_date and end_date.tzinfo is None:
+                    end_date = end_date.replace(tzinfo=timezone.utc)
+                start_ts = int(start_date.timestamp()) if start_date else None
+                end_ts = int(end_date.timestamp()) if end_date else None
+
+                filtered_games = []
+                for game in all_games:
+                    ts = int(game.get('end_time', 0))
+                    if start_ts is not None and ts < start_ts:
+                        continue
+                    if end_ts is not None and ts > end_ts:
+                        continue
+                    filtered_games.append(game)
+                return filtered_games
 
         return all_games
 

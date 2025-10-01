@@ -210,6 +210,13 @@ class ChessDatabase:
         conn = self._get_connection()
         cursor = conn.cursor()
 
+        from datetime import timezone
+        # Treat naive datetimes as UTC to align with Chess.com epoch timestamps
+        if start_date.tzinfo is None:
+            start_date = start_date.replace(tzinfo=timezone.utc)
+        if end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=timezone.utc)
+
         start_ts = int(start_date.timestamp())
         end_ts = int(end_date.timestamp())
 

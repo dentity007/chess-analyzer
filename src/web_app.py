@@ -1,60 +1,14 @@
-"""Chess Analyzer Web Interface - Flask Application.
+"""Chess Analyzer Web Interface (Flask).
 
-This module provides a modern web-based interface for Chess Analyze    def fetch_worker():
-        global analysis_progress
-        try:
-            analysis_progress = {"status": "fetching", "progress": 0, "message": f"Fetching games for {username}..."}
+Provides a local web UI to:
+- Fetch Chess.com games for a username
+- Analyze stored games with Stockfish
+- Generate optional AI insights via configured provider
 
-            # Create a new database connection for this thread
-            from db.database import ChessDatabase
-            db = ChessDatabase()
-
-            # Fetch games using the global client
-            games_data = current_client.get_all_games(username)
-
-            if games_data:
-                # Store in database
-                stored_count = db.store_games(games_data, username)
-                analysis_progress = {"status": "completed", "progress": 100, "message": f"Stored {stored_count} games for {username}"}
-            else:
-                analysis_progress = {"status": "error", "progress": 0, "message": "No games found or error fetching"}
-
-        except Exception as e:
-            analysis_progress = {"status": "error", "progress": 0, "message": f"Error: {str(e)}"}alhost. The web interface offers:
-
-Features:
-- Chess.com username input and game fetching
-- Real-time progress tracking during analysis
-- Modern responsive web UI with HTML/CSS/JavaScript
-- RESTful API endpoints for all operations
-- Local credential management
-- Cross-platform compatibility
-
-Web Components:
-- Flask backend server
-- HTML/CSS/JavaScript frontend
-- Bootstrap for responsive design
-- AJAX for real-time updates
-- Local storage for credentials
-
-Usage:
-    # From command line
-    python -m src.web_app
-
-    # Or directly
-    python src/web_app.py
-
-Security:
-- Local credential storage in config.local.ini (gitignored)
-- No network transmission of sensitive data
-- Secure password handling
-- CORS enabled for local development
-
-Dependencies:
-- flask: Web framework
-- flask-cors: Cross-origin resource sharing
-- werkzeug: WSGI utility
-- jinja2: Template engine
+Notes:
+- Runs locally; no credentials are transmitted externally
+- Uses SQLite for local storage
+- Designed for responsiveness with background threads and progress polling
 """
 
 from flask import Flask, render_template, request, jsonify, flash, redirect, url_for
@@ -198,7 +152,11 @@ def fetch_games():
 
             if games_data:
                 # Store in database
-                stored_count = db.store_games(games_data, username)
+                try:
+                    db.insert_games_batch(games_data)
+                    stored_count = len(games_data)
+                finally:
+                    db.close()
                 analysis_progress = {"status": "completed", "progress": 100, "message": f"Stored {stored_count} games for {username}"}
             else:
                 analysis_progress = {"status": "error", "progress": 0, "message": "No games found or error fetching"}
@@ -214,7 +172,11 @@ def fetch_games():
 
 @app.route('/api/analyze_games', methods=['POST'])
 def analyze_games():
-    """Analyze stored games."""
+    """Analyze stored games for the provided username (or saved config)."""
+    # Try to get username from request (preferred)
+    req_data = request.get_json(silent=True) or {}
+    requested_username = (req_data.get('username') or "").strip()
+
     def analyze_worker():
         global analysis_progress
         try:
@@ -224,10 +186,30 @@ def analyze_games():
             from db.database import ChessDatabase
             db = ChessDatabase()
 
-            # Get all games from database
-            games = db.get_all_games()
+            # Determine username: request JSON, or fallback to saved config
+            username = requested_username
+            if not username:
+                try:
+                    import configparser
+                    config_path = Path(__file__).parent.parent / 'config.local.ini'
+                    if config_path.exists():
+                        cfg = configparser.ConfigParser()
+                        cfg.read(config_path)
+                        if 'chess_com' in cfg:
+                            username = cfg['chess_com'].get('username', '').strip()
+                except Exception:
+                    username = username or ""
+
+            if not username:
+                analysis_progress = {"status": "error", "progress": 0, "message": "Please provide a username to analyze."}
+                db.close()
+                return
+
+            # Get games for username from database
+            games = db.get_games_by_username(username)
             if not games:
                 analysis_progress = {"status": "error", "progress": 0, "message": "No games found to analyze"}
+                db.close()
                 return
 
             total_games = len(games)
@@ -248,7 +230,7 @@ def analyze_games():
                     ai_insights = ""
                     if current_ai:
                         try:
-                            ai_insights = current_ai.analyze_game(game['pgn'])
+                            ai_insights = current_ai.get_chess_advice(game['pgn'], analysis)
                         except:
                             ai_insights = "AI analysis not available"
 
@@ -588,13 +570,19 @@ def create_templates():
         }
 
         function analyzeGames() {
+            const username = document.getElementById('username').value;
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+
             document.getElementById('progressSection').style.display = 'block';
             document.getElementById('resultsSection').style.display = 'none';
 
             fetch('/api/analyze_games', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+                body: JSON.stringify({ username })
             })
             .then(response => response.json())
             .then(data => {

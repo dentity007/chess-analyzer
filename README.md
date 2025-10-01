@@ -1,59 +1,8 @@
 # ♟️ Chess Analyzer
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licen## 🌐 Web Interface
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The web interface provides a modern, responsive alternative to the desktop GUI with enhanced cross-platform compatibility and real-time features.
-
-### Features
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
-- **Real-time Updates**: Live progress bars and status updates during analysis
-- **AJAX Integration**: Asynchronous operations for smooth user experience
-- **Bootstrap Styling**: Modern, professional appearance
-- **Local Security**: Runs on localhost with no external dependencies
-- **Cross-Platform**: Works on any device with a modern web browser
-
-### Setup & Usage
-
-1. **Start the Web Server:**
-   ```bash
-   # Using Python launcher (recommended)
-   python start_web.py
-   
-   # Or using shell script
-   ./start_web.sh
-   
-   # Or directly with Python
-   python -m src.web_app
-   ```
-
-2. **Access the Interface:**
-   - Open your browser to `http://localhost:5000`
-   - The interface will automatically open in your default browser
-
-3. **Using the Web Interface:**
-   - Enter your Chess.com username
-   - Click "Fetch Games" to download your recent games
-   - Click "Analyze Games" to get detailed analysis with AI insights
-   - View real-time progress and results
-   - Save analysis results as needed
-
-### Web Interface vs Desktop GUI
-
-| Feature | Web Interface | Desktop GUI |
-|---------|---------------|-------------|
-| Cross-Platform | ✅ Any device with browser | ⚠️ Platform-specific |
-| Mobile Support | ✅ Full responsive | ❌ Limited |
-| Real-time Updates | ✅ AJAX powered | ⚠️ Basic progress |
-| Setup Complexity | ✅ Simple (one command) | ⚠️ May require fixes |
-| Dependencies | ✅ Browser only | ⚠️ Tkinter/system libraries |
-| Portability | ✅ No installation needed | ⚠️ Executable distribution |
-
-### Technical Details
-- **Framework**: Flask web application
-- **Frontend**: HTML5, CSS3, JavaScript with Bootstrap 5
-- **Backend**: Python with RESTful API endpoints
-- **Database**: SQLite with thread-safe operations
-- **Security**: Localhost-only access, no external data transmissionT)
+**A professional cross-platform desktop application for analyzing chess games from Chess.com with multi-provider AI-powered insights and comprehensive game analysis.**
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![macOS Build](https://img.shields.io/badge/macOS-Ready-green.svg)](https://github.com/dentity007/chess-analyzer/releases)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
@@ -106,7 +55,7 @@ Chess Analyzer provides chess players with detailed move-by-move analysis, blund
 
 ## 🚀 Quick Start
 
-### � Option 1: Web Interface (Recommended)
+### 🌐 Option 1: Web Interface (Recommended)
 ```bash
 # Clone the repository
 git clone https://github.com/dentity007/chess-analyzer.git
@@ -179,7 +128,7 @@ python3 -m src.main fetch yourusername
 python3 -m src.main analyze --username yourusername
 ```
 
-## � Prerequisites
+## 📦 Prerequisites
 
 - **Python 3.8+** (for source installation)
 - **macOS 10.12+** (for macOS builds)
@@ -254,11 +203,6 @@ anthropic_api_key = your_anthropic_key_here
 ```
 
 **Note:** The config file is automatically excluded from Git for security.
-```
-- Enter your Chess.com username
-- Click "Fetch Games" to download recent games
-- Click "Analyze" to get detailed analysis
-- View AI-powered insights and recommendations
 
 ### CLI Mode
 ```bash
