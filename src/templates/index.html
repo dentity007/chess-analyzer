@@ -87,6 +87,71 @@
                             <input type="text" class="form-control" id="username" placeholder="Enter Chess.com username">
                         </div>
 
+                        <!-- Game Fetching Options -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-cogs me-1"></i>Game Fetching Options
+                            </label>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="fetchMode" id="lastGameOnly" value="last" checked>
+                                        <label class="form-check-label" for="lastGameOnly">
+                                            Last Game Only
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="fetchMode" id="dateRange" value="range">
+                                        <label class="form-check-label" for="dateRange">
+                                            Date Range
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="fetchMode" id="recentDays" value="days">
+                                        <label class="form-check-label" for="recentDays">
+                                            Last X Days
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="fetchMode" id="demoMode" value="demo">
+                                        <label class="form-check-label" for="demoMode">
+                                            <i class="fas fa-flask me-1"></i>Demo Mode
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Date Range Inputs (hidden by default) -->
+                            <div id="dateRangeInputs" style="display: none; margin-top: 15px;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="endDate" class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="endDate">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Days Input (hidden by default) -->
+                            <div id="daysInput" style="display: none; margin-top: 15px;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="daysCount" class="form-label">Number of Days</label>
+                                        <input type="number" class="form-control" id="daysCount" value="5" min="1" max="365">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Action Buttons -->
                         <div class="d-grid gap-3 mb-4">
                             <button class="btn btn-primary btn-lg" onclick="fetchGames()">
@@ -155,6 +220,34 @@
     <script>
         let progressInterval;
 
+        // Handle fetch mode changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const fetchModeRadios = document.querySelectorAll('input[name="fetchMode"]');
+            fetchModeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateFetchModeUI();
+                });
+            });
+            updateFetchModeUI(); // Initial state
+        });
+
+        function updateFetchModeUI() {
+            const fetchMode = document.querySelector('input[name="fetchMode"]:checked').value;
+            const dateRangeInputs = document.getElementById('dateRangeInputs');
+            const daysInput = document.getElementById('daysInput');
+
+            // Hide all inputs first
+            dateRangeInputs.style.display = 'none';
+            daysInput.style.display = 'none';
+
+            // Show relevant inputs
+            if (fetchMode === 'range') {
+                dateRangeInputs.style.display = 'block';
+            } else if (fetchMode === 'days') {
+                daysInput.style.display = 'block';
+            }
+        }
+
         function showCredentialsModal() {
             // Load saved credentials
             fetch('/api/load_credentials')
@@ -196,9 +289,38 @@
 
         function fetchGames() {
             const username = document.getElementById('username').value;
-            if (!username) {
+            const fetchMode = document.querySelector('input[name="fetchMode"]:checked').value;
+            
+            // Demo mode doesn't require username
+            if (!username && fetchMode !== 'demo') {
                 alert('Please enter a username');
                 return;
+            }
+
+            // Get fetch mode and parameters
+            let fetchParams = { mode: fetchMode };
+            
+            // Only add username if not demo mode
+            if (fetchMode !== 'demo') {
+                fetchParams.username = username;
+            }
+
+            if (fetchMode === 'range') {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                if (!startDate || !endDate) {
+                    alert('Please select both start and end dates');
+                    return;
+                }
+                fetchParams.startDate = startDate;
+                fetchParams.endDate = endDate;
+            } else if (fetchMode === 'days') {
+                const daysCount = document.getElementById('daysCount').value;
+                if (!daysCount || daysCount < 1) {
+                    alert('Please enter a valid number of days');
+                    return;
+                }
+                fetchParams.days = parseInt(daysCount);
             }
 
             document.getElementById('progressSection').style.display = 'block';
@@ -207,7 +329,7 @@
             fetch('/api/fetch_games', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify(fetchParams)
             })
             .then(response => response.json())
             .then(data => {
@@ -220,13 +342,35 @@
         }
 
         function analyzeGames() {
+            // Get username if provided, but don't require it
+            const username = document.getElementById('username').value.trim();
+
             document.getElementById('progressSection').style.display = 'block';
             document.getElementById('resultsSection').style.display = 'none';
 
             fetch('/api/analyze_games', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+                body: JSON.stringify({ username: username || null })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    startProgressTracking();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function analyzeSingleGame(gameId) {
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+
+            fetch('/api/analyze_single_game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ game_id: gameId })
             })
             .then(response => response.json())
             .then(data => {
@@ -239,7 +383,26 @@
         }
 
         function showStats() {
-            alert('Statistics feature coming soon!');
+            // Show loading state
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('progressText').textContent = 'Loading games...';
+            document.getElementById('resultsSection').style.display = 'none';
+
+            fetch('/api/get_games')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('progressSection').style.display = 'none';
+                    
+                    if (data.success) {
+                        displayGames(data.games);
+                    } else {
+                        alert('Error loading games: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('progressSection').style.display = 'none';
+                    alert('Error: ' + error.message);
+                });
         }
 
         function startProgressTracking() {
@@ -258,6 +421,8 @@
 
                             if (data.results) {
                                 displayResults(data.results);
+                            } else if (data.result) {
+                                displayResults([data.result]);
                             }
                         } else if (data.status === 'error') {
                             clearInterval(progressInterval);
@@ -277,12 +442,58 @@
                 div.className = 'analysis-result';
                 div.innerHTML = `
                     <h6>Game ${result.game_id}</h6>
+                    ${result.white_username && result.black_username ? `<p><strong>Players:</strong> ${result.white_username} (White) vs ${result.black_username} (Black)</p>` : ''}
                     <p><strong>Result:</strong> ${result.result}</p>
                     <p><strong>Analysis:</strong> ${result.analysis}</p>
                     ${result.ai_insights ? `<p><strong>AI Insights:</strong> ${result.ai_insights}</p>` : ''}
                 `;
                 container.appendChild(div);
             });
+
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+
+        function displayGames(games) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            if (games.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No games found in database. Try fetching some games first.</div>';
+            } else {
+                // Add summary
+                const summaryDiv = document.createElement('div');
+                summaryDiv.className = 'alert alert-success mb-3';
+                summaryDiv.innerHTML = `<strong>${games.length}</strong> games found in database`;
+                container.appendChild(summaryDiv);
+
+                // Display games
+                games.forEach(game => {
+                    const div = document.createElement('div');
+                    div.className = 'analysis-result';
+                    
+                    // Format date
+                    const date = new Date(game.date * 1000);
+                    const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    
+                    div.innerHTML = `
+                        <h6>Game ${game.game_id}</h6>
+                        <p><strong>Players:</strong> ${game.white_username} (White) vs ${game.black_username} (Black)</p>
+                        <p><strong>Result:</strong> ${game.result || 'Unknown'}</p>
+                        <p><strong>Time Control:</strong> ${game.time_control || 'Unknown'}</p>
+                        <p><strong>Date:</strong> ${dateStr}</p>
+                        <div class="mb-2">
+                            <button class="btn btn-primary btn-sm me-2" onclick="analyzeSingleGame('${game.game_id}')">
+                                <i class="fas fa-brain"></i> Analyze This Game
+                            </button>
+                        </div>
+                        <details>
+                            <summary>View PGN</summary>
+                            <pre style="white-space: pre-wrap; font-size: 12px; margin-top: 10px;">${game.pgn}</pre>
+                        </details>
+                    `;
+                    container.appendChild(div);
+                });
+            }
 
             document.getElementById('resultsSection').style.display = 'block';
         }

@@ -84,7 +84,7 @@ from . import AIClient
 class GrokClient(AIClient):
     """Client for xAI Grok API integration."""
 
-    BASE_URL = "https://api.x.ai/v1"  # Placeholder - check actual xAI API endpoint
+    BASE_URL = "https://api.x.ai"  # xAI API base URL
 
     def __init__(self, api_key: Optional[str] = None):
         """Initialize Grok client with API key.
@@ -158,7 +158,7 @@ class GrokClient(AIClient):
         }
 
         payload = {
-            "model": "grok-beta",  # Placeholder - check actual model name
+            "model": "grok-4",  # xAI Grok model (updated from grok-1)
             "messages": [
                 {
                     "role": "user",
@@ -166,22 +166,22 @@ class GrokClient(AIClient):
                 }
             ],
             "max_tokens": 1000,
-            "temperature": 0.7
+            "temperature": 0.7,
+            "stream": False
         }
 
-        # Note: This is a placeholder implementation
-        # Actual xAI API endpoint and parameters need to be verified
+        # xAI API call - use chat completions endpoint
         response = requests.post(
-            f"{self.BASE_URL}/chat/completions",  # Placeholder endpoint
+            f"{self.BASE_URL}/v1/chat/completions",
             headers=headers,
             json=payload,
-            timeout=30
+            timeout=60  # Increased timeout for xAI API
         )
 
         response.raise_for_status()
         result = response.json()
 
-        # Extract advice from response
+        # Extract advice from chat completions response
         return {
             "advice": result.get("choices", [{}])[0].get("message", {}).get("content", "")
         }

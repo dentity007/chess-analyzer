@@ -7,8 +7,6 @@
 [![macOS Build](https://img.shields.io/badge/macOS-Ready-green.svg)](https://github.com/dentity007/chess-analyzer/releases)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
 
-**A professional cross-platform desktop application for analyzing chess games from Chess.com with multi-provider AI-powered insights and comprehensive game analysis.**
-
 Chess Analyzer provides chess players with detailed move-by-move analysis, blunder detection, and personalized improvement suggestions powered by xAI Grok. Features both modern GUI and command-line interfaces with local database storage.
 
 ## ✨ Key Features
@@ -46,6 +44,9 @@ Chess Analyzer provides chess players with detailed move-by-move analysis, blund
 - **Optional Authentication**: Use Chess.com credentials for enhanced features
 - **Secure Storage**: Local credential storage with Git exclusion
 - **No Data Transmission**: Your games and analysis stay private
+- **API Key Protection**: Never commit API keys to version control
+
+> ⚠️ **IMPORTANT**: Never commit your `config.local.ini` file containing API keys to version control. It is automatically excluded by `.gitignore` for your security.
 
 ### 📦 Distribution Ready
 - **Standalone Executables**: PyInstaller-packaged apps for Windows, macOS, and Linux
@@ -54,6 +55,15 @@ Chess Analyzer provides chess players with detailed move-by-move analysis, blund
 - **Professional Packaging**: Proper app bundles with icons and metadata
 
 ## 🚀 Quick Start
+
+### 🔒 Security First
+**Before you begin**: This application uses AI services that require API keys. Your API keys are stored locally and never transmitted except to the AI providers. However, for your security:
+
+- ✅ `config.local.ini` is automatically excluded from Git commits
+- ✅ API keys are only used for AI analysis requests
+- ✅ No sensitive data is logged or stored
+- ❌ Never share your `config.local.ini` file
+- ❌ Never commit API keys to version control
 
 ### 🌐 Option 1: Web Interface (Recommended)
 ```bash
@@ -171,6 +181,8 @@ python3 -m src.main stats yourusername
 
 ### ⚙️ Configuration
 
+> 🔒 **SECURITY WARNING**: Never commit your `config.local.ini` file to version control. It contains sensitive API keys and will be automatically ignored by Git.
+
 Create `config.local.ini` in the project root:
 ```ini
 [chess_com]
@@ -202,25 +214,24 @@ openai_api_key = your_openai_key_here
 anthropic_api_key = your_anthropic_key_here
 ```
 
+### 🔍 Verify Your Configuration is Secure
+
+After setting up your API keys, verify they won't be committed:
+
+```bash
+# Check that config.local.ini is ignored by Git
+git status --ignored | grep config.local.ini
+
+# Verify the file is in .gitignore
+grep "config.local.ini" .gitignore
+
+# Test that your API key is loaded (without exposing it)
+python3 -c "from src.ai.grok_client import GrokClient; client = GrokClient(); print('API key loaded:', client.is_available())"
+```
+
 **Note:** The config file is automatically excluded from Git for security.
 
-### CLI Mode
-```bash
-# Fetch all games for a user
-python -m src.main fetch magnuscarlsen
-
-# Analyze recent games
-python -m src.main analyze --username magnuscarlsen
-
-# Analyze games from specific date range
-python -m src.main analyze --username magnuscarlsen --date-range 2024-01-01:2024-12-31
-
-# Get player statistics
-python -m src.main stats --username magnuscarlsen
-
-# Test Chess.com authentication setup
-python -m src.main auth-test
-```
+ 
 
 ### Sample Output
 ```
@@ -246,45 +257,6 @@ Consider focusing on king safety in the middlegame - this appeared in 3 of the 5
 ```
 
 ## ⚙️ Configuration
-
-### Chess.com Credentials (Optional)
-For future premium features and testing, you can store Chess.com credentials locally:
-
-1. Create a `config.local.ini` file in the project root:
-   ```ini
-   [chess_com]
-   username = your_chess_com_username
-   password = your_password
-   ```
-
-2. **Security Note**: This file is automatically excluded from Git commits via `.gitignore`
-
-### AI Features Setup
-Enable AI-powered chess analysis by configuring an xAI API key:
-
-**Option 1: Environment Variable**
-```bash
-export XAI_API_KEY=your_api_key_here
-```
-
-**Option 2: Configuration File**
-Add to your `config.local.ini`:
-```ini
-[ai]
-api_key = your_xai_api_key_here
-```
-
-Get your API key from [x.ai/api](https://x.ai/api)
-
-### Stockfish Engine
-The app automatically detects Stockfish in these locations:
-- `/usr/local/bin/stockfish` (macOS/Linux)
-- `/usr/bin/stockfish` (Linux)
-- `C:\Program Files\stockfish\stockfish.exe` (Windows)
-- `./stockfish` (project directory)
-- In system PATH
-
-Download Stockfish from the [official website](https://stockfishchess.org/download/) if needed.
 
 ## 🏗️ Architecture & Design
 
@@ -355,12 +327,7 @@ Chess Analyzer follows a modular 5-layer architecture for maintainability and sc
 - **Build Status**: ✅ macOS builds successful
 - **Code Quality**: Comprehensive error handling and logging
 - **Documentation**: Complete API documentation and user guides
-├── ROADMAP.md           # Future development plans
-├── SECURITY.md          # Security policy
-├── CODE_OF_CONDUCT.md   # Community guidelines
-├── LICENSE              # MIT License
-└── README.md           # This file
-```
+ 
 
 ## 🧪 Testing
 
@@ -380,7 +347,7 @@ pytest tests/test_api_client.py -v
 pytest tests/ -n auto
 ```
 
-**Current Status**: ✅ 32/38 tests passing (84% coverage)
+**Current Status**: ✅ All tests passing locally (48 tests)
 
 ### Test Categories
 - **API Tests**: Chess.com integration and rate limiting

@@ -88,6 +88,10 @@ cp config.local.ini.example config.local.ini
 # Edit config.local.ini with your test credentials
 # Note: This file is gitignored for security
 
+# ⚠️  SECURITY WARNING: Never commit config.local.ini
+# It contains API keys and will be automatically excluded by .gitignore
+# Use test/demo keys only - never real production API keys
+
 # Set up environment variables (optional)
 export XAI_API_KEY=your_test_key_here
 ```

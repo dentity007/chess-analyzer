@@ -168,11 +168,29 @@ class ChessComClient:
         self._rate_limit()
 
         session = self.session if use_auth and self.username else requests
-        url = f"{self.BASE_URL}{endpoint}"
+        url = f"{self.BASE_URL}{endpoint}" if endpoint.startswith('/') else endpoint
 
-        response = session.get(url)
+        headers = {
+            'User-Agent': 'ChessAnalyzer/1.0.0 (https://github.com/dentity007/chess-analyzer)'
+        }
+
+        response = session.get(url, headers=headers)
         response.raise_for_status()
         return response.json()
+
+    def _get_raw(self, url: str, use_auth: bool = False) -> requests.Response:
+        """Make a GET request to any URL with proper headers."""
+        self._rate_limit()
+
+        session = self.session if use_auth and self.username else requests
+
+        headers = {
+            'User-Agent': 'ChessAnalyzer/1.0.0 (https://github.com/dentity007/chess-analyzer)'
+        }
+
+        response = session.get(url, headers=headers)
+        response.raise_for_status()
+        return response
 
     def get_player_profile(self, username: str, use_auth: bool = False) -> Dict:
         """Get player profile information."""
@@ -235,9 +253,7 @@ class ChessComClient:
             - white_username, black_username: Player usernames
             - result: Game result (e.g., "1-0", "0-1", "1/2-1/2")
         """
-        self._rate_limit()
-        response = requests.get(archive_url)
-        response.raise_for_status()
+        response = self._get_raw(archive_url)
         return response.json()['games']
 
     def get_all_games(self, username: str, start_date: Optional[datetime] = None,

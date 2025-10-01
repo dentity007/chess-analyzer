@@ -157,11 +157,24 @@ class ChessDatabase:
 
         games_data = []
         for game in games:
+            # Extract game_id from URL
+            game_id = game.get('url', '').split('/')[-1] if game.get('url') else ''
+            
+            # Extract result from PGN if not directly available
+            result = game.get('result', '')
+            if not result:
+                pgn = game.get('pgn', '')
+                # Parse result from PGN
+                for line in pgn.split('\n'):
+                    if line.startswith('[Result "'):
+                        result = line.split('"')[1]
+                        break
+            
             games_data.append((
-                game.get('url', '').split('/')[-1],
+                game_id,
                 game.get('pgn', ''),
                 game.get('end_time', 0),
-                game.get('result', ''),
+                result,
                 game.get('white', {}).get('username', ''),
                 game.get('black', {}).get('username', ''),
                 game.get('time_control', ''),
@@ -227,6 +240,14 @@ class ChessDatabase:
             ORDER BY date DESC
         ''', (username, username, start_ts, end_ts))
 
+        return [dict(row) for row in cursor.fetchall()]
+
+    def get_all_games(self) -> List[Dict]:
+        """Get all games from the database."""
+        conn = self._get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('SELECT * FROM games ORDER BY date DESC')
         return [dict(row) for row in cursor.fetchall()]
 
     def cache_analysis(self, game_id: str, move_number: int, fen: str,

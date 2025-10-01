@@ -1,8 +1,16 @@
 # Chess Analyzer Local Configuration - Example Template
 # ====================================================
 #
+# ⚠️  SECURITY WARNING - DO NOT COMMIT THE ACTUAL CONFIG FILE  ⚠️
+# ================================================================
+#
 # This is an EXAMPLE file to help contributors set up their local configuration.
 # DO NOT commit the actual config.local.ini file to version control.
+# DO NOT share your config.local.ini file with anyone.
+# DO NOT include API keys in any commits or public repositories.
+#
+# The config.local.ini file is automatically excluded by .gitignore for your security.
+# If you accidentally commit it, immediately revoke your API keys and regenerate them.
 #
 # To use this:
 # 1. Copy this file to config.local.ini
@@ -13,6 +21,7 @@
 # - Never commit config.local.ini to version control
 # - Keep your credentials secure and private
 # - Use strong, unique passwords
+# - API keys provide access to paid services - protect them carefully
 
 [chess_com]
 # Your Chess.com username (without @domain.com)
